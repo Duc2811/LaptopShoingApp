@@ -7,7 +7,7 @@ const sendMailHelper = require('../../../helper/sendEmail')
 // [POST] api/user/register
 module.exports.register = async (req, res) => {
     try {
-        const { email, userName, password } = req.body;
+        const { email, userName, password, phone, address } = req.body;
         const salt = await bcrypt.genSalt(saltRounds);
         const hasPassword = await bcrypt.hash(password, salt);
         const emailExits = await Users.findOne({
@@ -23,7 +23,9 @@ module.exports.register = async (req, res) => {
             const user = new Users({
                 email,
                 userName,
-                password: hasPassword
+                password: hasPassword,
+                phone,
+                address
             });
             await user.save();
             res.json({

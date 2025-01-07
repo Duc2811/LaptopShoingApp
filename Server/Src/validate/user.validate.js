@@ -27,6 +27,14 @@ module.exports.registerValidate = async (req, res, next) => {
         })
         return;
     }
+    if (!req.body.address) {
+        res.json({
+            code: 402,
+            message: "Address must not be empty."
+        })
+        return;
+    }
+
     next();
 }
 module.exports.loginValidate = async (req, res, next) => {
