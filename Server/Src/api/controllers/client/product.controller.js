@@ -1,8 +1,10 @@
 const Product = require('../../models/product')
 const PaginationHelper = require('../../../helper/pagination')
 const User = require('../../models/user')
+const Category = require('../../models/category')
 
 
+//[Post] api/addProducts
 module.exports.addProduct = async (req, res) => {
     try {
         const { name, price, image, description, category, quantity, sold, saleOf, salePrice } = req.body;
@@ -18,6 +20,10 @@ module.exports.addProduct = async (req, res) => {
         if (!productManager || productManager.role !== 'productManager') {
             return res.status(401).json({ message: 'User not authorized to add product or User not found!!!' });
         }
+        const categories = await Category.findOne({ name: category }).lean();
+        if (!categories) {
+            return res.status(400).json({ message: 'Category not found' });
+        }
 
         const product = new Product({
             productManager: productManager._id,
@@ -25,7 +31,7 @@ module.exports.addProduct = async (req, res) => {
             price,
             image,
             description,
-            category,
+            category: categories._id,
             quantity,
             sold,
             saleOf,
@@ -41,31 +47,58 @@ module.exports.addProduct = async (req, res) => {
 }
 
 
+
 //[Put] api/products/:id
 module.exports.updateProduct = async (req, res) => {
     try {
-        const { _id } = req.body;
+        const { id } = req.params;
+        const { name, price, image, description, category, quantity, sold } = req.body;
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
-        const { name, price, image, description, category, quantity, sold, saleOf, salePrice } = req.body;
         if (!token) {
             return res.status(401).json({ message: 'Token is missing or invalid!' });
         }
         const productManager = await User.findOne({ token: token });
-
         if (!productManager || productManager.role !== 'productManager') {
             return res.status(401).json({ message: 'User not authorized to update product or User not found!!!' });
         }
-        const newProduct = { name, price, image, description, category, quantity, sold, saleOf, salePrice }
-        const product = await Product.findByIdAndUpdate(_id, newProduct, { new: true });
+        const product = await Product.findById(id);
         if (!product) {
-            return res.status(404).json({ message: 'Product not found.' })
+            return res.status(404).json({ message: 'Product not found' });
         }
-        res.status(200).json({ message: 'Product updated successfully', product });
+        let categoryDoc = null;
+        if (category) {
+            categoryDoc = await Category.findOne({ name: category }).lean();
+            if (!categoryDoc) {
+                return res.status(400).json({ message: 'Category not found' });
+            }
+        }
+        const updateFields = {
+            name: name || product.name,
+            price: price || product.price,
+            image: image || product.image,
+            description: description || product.description,
+            quantity: quantity || product.quantity,
+            sold: sold || product.sold,
+        };
+
+        if (categoryDoc) {
+            updateFields.category = categoryDoc._id;
+        }
+        const updatedProduct = await Product.findByIdAndUpdate(id, updateFields, { new: true });
+
+        if (!updatedProduct) {
+            return res.status(404).json({ message: 'Failed to update product.' });
+        }
+
+        res.status(200).json({ message: 'Product updated successfully', product: updatedProduct });
+
     } catch (error) {
-        res.status(500).json(error)
+        res.status(500).json({ message: error.message + ' update Product Error' });
     }
 }
+
+
 
 //[Delete] api/products/managerDelete/:id
 module.exports.managerDeleteProduct = async (req, res) => {
@@ -106,6 +139,7 @@ module.exports.adminDeleteProduct = async (req, res) => {
         res.status(500).json(`Delete product error: ` + error.message)
     }
 }
+
 // [GET] api/products/search?query=
 
 module.exports.searchProducts = async (req, res) => {
@@ -128,10 +162,13 @@ module.exports.searchProducts = async (req, res) => {
 }
 
 
-// [GET] api/products
+// [GET] api/products/getAllProducts
 module.exports.getAllProducts = async (req, res) => {
     try {
         const totalProducts = await Product.countDocuments({ deleted: false })
+        if (totalProducts === 0) {
+            return res.status(404).json({ message: 'No products found.' })
+        }
         const paginationData = await PaginationHelper({
             currentPage: 1,
             limit: 12,
@@ -139,14 +176,10 @@ module.exports.getAllProducts = async (req, res) => {
             totalProducts,
             req.query
         )
-        if (!paginationData.length) {
-            return res.status(404).json({ message: 'No products found.' })
-
-        }
-        const products = await Product.find({ delete: false })
+        const products = await Product.find({ deleted: false })
             .skip(paginationData.skip)
             .limit(paginationData.limit)
-            .sort({ createdAt: "desc" })
+            .sort({ createdAt: -1 })
 
         res.status(200).json({
             products,
@@ -166,17 +199,25 @@ module.exports.getProductById = async (req, res) => {
         res.status(500).json(error)
     }
 
+}
 
-    module.exports.getProductByCategory = async (req, res) => {
-        try {
-            const category = await req.query.category;
-            const products = await Product.find({ category })
-            if (products.length <= 0 && products === null) {
-                return res.status(404).json({ message: 'Product not found.' })
-            }
-            res.status(200).json(products)
-        } catch (error) {
-            res.status(500).json(error)
+// [GET] api/products/getProductByCategory/category
+module.exports.getProductByCategory = async (req, res) => {
+    try {
+        const { category } = req.params;
+        if (!category) {
+            return res.status(400).json({ message: 'Please provide a category.' })
         }
+        const categories = await Category.findOne({ name: category });
+        if (!categories) {
+            return res.status(404).json({ message: 'Category not found.' })
+        }
+        const products = (await Product.find({ category: categories._id }));
+        if (!products || products === null) {
+            return res.status(404).json({ message: 'Product not found.' })
+        }
+        res.status(200).json(products)
+    } catch (error) {
+        res.status(500).json(error)
     }
 }
