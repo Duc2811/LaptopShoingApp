@@ -22,7 +22,7 @@ app.use(bodyParser.json())
 
 
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'], // URL của frontend
+    origin: ['http://localhost:8081', 'http://localhost:8082'], // URL của frontend
     credentials: true // Cho phép gửi cookie
 }));
 
