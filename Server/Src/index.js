@@ -6,7 +6,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
 //connet db
-const database = require('./config/database')
+const database = require('./Config/database')
 database.connect();
 
 app.use(express.json());
