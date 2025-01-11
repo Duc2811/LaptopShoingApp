@@ -105,8 +105,10 @@ const HomeScreen: React.FC = () => {
       </Box>;
 
       <View>
-
-
+        <Image source={require("../assets/1.png")} />
+        <Image source={require("../assets/2.png")} />
+        <Image source={require("../assets/3.png")} />
+        <Image source={require("../assets/4.png")} />
       </View>
 
 
