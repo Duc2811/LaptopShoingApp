@@ -1,6 +1,8 @@
 const userRoute = require('./user.router')
 const productRoute = require('./product.router')
 const categoryRoute = require('./category.router')
+const saleRoute = require('./sale.router')
+
 // const blogRoute = require('./blog.route')
 // const labraryRoute = require('./labrary.route')
 // const notificationRoute = require('./notification.route')
@@ -13,6 +15,7 @@ module.exports = (app) => {
     app.use(api + '/user', userRoute);
     app.use(api + '/product', productRoute);
     app.use(api + '/category', categoryRoute);
+    app.use(api + '/sale', saleRoute);
     // app.use(api + '/blog', blogRoute)
     // app.use(api + '/admin', adminRoutes);
     // app.use(api + '/labrary', labraryRoute);

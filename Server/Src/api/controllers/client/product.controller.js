@@ -141,25 +141,56 @@ module.exports.adminDeleteProduct = async (req, res) => {
 }
 
 // [GET] api/products/search?query=
-
 module.exports.searchProducts = async (req, res) => {
     try {
-        const query = req.body.query.trim();
-        if (!query) {
-            return res.status(400).json({ message: 'Please provide a query.' })
+        const { name, description } = req.body;
+
+        if (!name && !description) {
+            return res.status(400).json({ message: 'Please provide a valid name or description to search.' });
         }
-        const products = await Product.find({
-            $text: { $search: query },
+
+        let productsQuery = {
             deleted: false
-        })
-        if (!products && !products.length) {
-            return res.status(404).json({ message: 'No products found.' })
+        };
+
+        if (name) {
+            productsQuery.name = { $regex: name, $options: "i" };
         }
-        res.status(200).json(`Products found: ` + products)
+
+        if (description) {
+            productsQuery.description = { $regex: description, $options: "i" };
+        }
+
+        const totalProducts = await Product.countDocuments(productsQuery);
+
+        if (totalProducts === 0) {
+            return res.status(404).json({ message: 'No products found.' });
+        }
+
+        const paginationData = await PaginationHelper(
+            {
+                currentPage: parseInt(req.query.page) || 1,
+                limit: parseInt(req.query.limit) || 12
+            },
+            totalProducts,
+            req.query
+        );
+
+        const products = await Product.find(productsQuery)
+            .skip(paginationData.skip)
+            .limit(paginationData.limit)
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            message: 'Products found',
+            products,
+            totalPage: paginationData.totalPage,
+            currentPage: paginationData.currentPage
+        });
     } catch (error) {
-        res.status(500).json(`Search product error: ` + error.message)
+        res.status(500).json({ message: `Search product error: ${error.message}` });
     }
-}
+};
 
 
 // [GET] api/products/getAllProducts
@@ -193,8 +224,24 @@ module.exports.getAllProducts = async (req, res) => {
 // [GET] api/products/:id
 module.exports.getProductById = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id)
-        res.status(200).json(product)
+
+        const totalProducts = await Product.countDocuments({ deleted: false })
+        if (totalProducts === 0) {
+            return res.status(404).json({ message: 'No products found.' })
+        }
+        const paginationData = await PaginationHelper({
+            currentPage: 1,
+            limit: 12,
+        },
+            totalProducts,
+            req.query
+        );
+        const product = await Product.findById(req.params).skip(paginationData.skip).limit(paginationData.limit).sort({ createdAt: -1 });
+
+        res.status(200).json({
+            product,
+            totalPage: paginationData.totalPage
+        })
     } catch (error) {
         res.status(500).json(error)
     }
@@ -208,15 +255,37 @@ module.exports.getProductByCategory = async (req, res) => {
         if (!category) {
             return res.status(400).json({ message: 'Please provide a category.' })
         }
+
         const categories = await Category.findOne({ name: category });
         if (!categories) {
             return res.status(404).json({ message: 'Category not found.' })
         }
-        const products = (await Product.find({ category: categories._id }));
+        const totalProducts = await Product.countDocuments({
+            category: categories._id,
+            deleted: false
+        })
+        if (totalProducts === 0) {
+            return res.status(404).json({ message: 'No products found.' })
+        }
+        const paginationData = await PaginationHelper({
+            currentPage: 1,
+            limit: 12,
+        },
+            totalProducts,
+            req.query
+        );
+
+        const products = await Product.find({ category: categories._id })
+            .skip(paginationData.skip)
+            .limit(paginationData.limit)
+            .sort({ createdAt: -1 });
         if (!products || products === null) {
             return res.status(404).json({ message: 'Product not found.' })
         }
-        res.status(200).json(products)
+        res.status(200).json({
+            products,
+            totalPage: paginationData.totalPage
+        })
     } catch (error) {
         res.status(500).json(error)
     }

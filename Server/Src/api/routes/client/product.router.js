@@ -10,6 +10,8 @@ routes.put('/updateProduct/:id', authorization.Authorization, controller.updateP
 routes.delete('/managerDelete/:id', authorization.Authorization, controller.managerDeleteProduct)
 routes.delete('/adminDelete/:id', authorization.Authorization, controller.adminDeleteProduct)
 
+
+routes.post('/search', controller.searchProducts)
 routes.get('/getProductByCategory/:category', controller.getProductByCategory)
 
 module.exports = routes;
