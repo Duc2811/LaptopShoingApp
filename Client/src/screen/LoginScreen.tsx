@@ -11,36 +11,50 @@ type RootStackParamList = {
   Register: undefined;
 };
 
-type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Register">;
+type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Home">;
 
 const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const dispatch = useDispatch();
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      alert("Please fill in both email and password.");
+      return;
+    }
+
     try {
-      const response: any = await userLogin(email.trim(), password.trim()); // Define the response type
-      if (response && response.data && response.data.code === 402) {
-        alert("Sai tài khoản hoặc mật khẩu");
-        return;
-      } else {
+      const res = await userLogin(email.trim(), password.trim());
+      if (res.code === 402) {
+        alert(res.message);
+      } else if (res.code === 200) {
+        alert(res.message);
         dispatch(doLogin({
-          _id: response.data._id,
-          token: response.data.token,
-          notification: 0
+          _id: res.id,
+          token: res.token,
+          notification: res.notification,
         }));
-        navigation.navigate("Home");
+        navigation.navigate("Home")
+      } else {
+        alert("Unexpected response code: " + res.code);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Lỗi đăng nhập:", error);
+      alert("Có lỗi xảy ra, vui lòng thử lại.");
     }
+  };
+
+  const handlePasswordToggle = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: "white", padding: 10, alignItems: "center" }}>
-      <KeyboardAvoidingView>
+      <KeyboardAvoidingView behavior="padding">
         <View style={{ marginTop: 100, justifyContent: "center", alignItems: "center" }}>
           <Text style={{ color: "#4A55A2", fontSize: 17, fontWeight: "600" }}>Login Screen</Text>
           <Text style={{ fontSize: 17, fontWeight: "600", marginTop: 15 }}>
@@ -66,11 +80,16 @@ const LoginScreen: React.FC = () => {
           <TextInput
             value={password}
             onChangeText={(text) => setPassword(text)}
-            secureTextEntry={true}
+            secureTextEntry={!showPassword}
             style={styles.input}
             placeholder="Enter Your Password"
             placeholderTextColor={"black"}
           />
+          <Pressable onPress={handlePasswordToggle}>
+            <Text style={styles.toggleText}>
+              {showPassword ? "Hide Password" : "Show Password"}
+            </Text>
+          </Pressable>
         </View>
 
         <Pressable style={styles.button} onPress={handleLogin}>
@@ -95,6 +114,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
     borderRadius: 10,
+    width: "100%",
   },
   button: {
     width: 200,
@@ -110,6 +130,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  toggleText: {
+    marginTop: 5,
+    color: "blue",
+    fontSize: 16,
   },
 });
 

@@ -17,6 +17,9 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "src/**/*",
-    "src/types/**/*"
+    "src/types/**/*",
+    "node_modules/native-base/**/*",
+    "node_modules/@react-native-community/slider/**/*",
+    "node_modules/@react-navigation/stack/**/*"
   ]
 }

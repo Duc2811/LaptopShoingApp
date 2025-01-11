@@ -3,34 +3,32 @@ import { View, Image, Button, StyleSheet } from "react-native";
 import Carousel from 'react-native-snap-carousel';
 import { Box, AspectRatio, Center, Stack, Heading, Text, HStack } from 'native-base';
 
-// Định nghĩa kiểu cho carouselRef
 const carouselRef = useRef<Carousel<any>>(null);
 
-
 const img = [
-  require("../assets/1.png"),
-  require("../assets/2.png"),
-  require("../assets/3.png"),
-  require("../assets/4.png"),
-  require("../assets/5.png"),
-]
+  require("../assets/OIP.jpg"),
+  require("../assets/Screenshot 2024-08-02 000616.png"),
+  require("../assets/OIP.jpg"),
+  require("../assets/OIP.jpg"),
+  require("../assets/OIP.jpg"),
+];
 
 const HomeScreen: React.FC = () => {
   const handlePrevious = () => {
     if (carouselRef.current) {
-      carouselRef.current.snapToPrev(); // Bây giờ sẽ không báo lỗi nữa
+      carouselRef.current.snapToPrev();
     }
-  }
+  };
 
   const handleNext = () => {
     if (carouselRef.current) {
       carouselRef.current.snapToNext();
     }
-  }
+  };
 
   const renderItem = ({ item }: { item: any }) => (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Image source={item} />
+      <Image source={item} style={styles.image} />
     </View>
   );
 
@@ -38,7 +36,7 @@ const HomeScreen: React.FC = () => {
     <View style={styles.container}>
       <Carousel
         style={styles.wrapper}
-        data={img}  // Đảm bảo rằng bạn đang sử dụng mảng `img`
+        data={img}  
         renderItem={renderItem}
         ref={carouselRef}
         sliderWidth={300}
@@ -62,7 +60,7 @@ const HomeScreen: React.FC = () => {
             <AspectRatio w="100%" ratio={16 / 9}>
               <Image source={{
                 uri: "https://www.holidify.com/images/cmsuploads/compressed/Bangalore_citycover_20190613234056.jpg"
-              }} alt="image" />
+              }} alt="image" style={styles.image} />
             </AspectRatio>
             <Center bg="violet.500" _dark={{
               bg: "violet.400"
@@ -102,19 +100,18 @@ const HomeScreen: React.FC = () => {
             </HStack>
           </Stack>
         </Box>
-      </Box>;
+      </Box>
 
       <View>
-        <Image source={require("../assets/1.png")} />
-        <Image source={require("../assets/2.png")} />
-        <Image source={require("../assets/3.png")} />
-        <Image source={require("../assets/4.png")} />
+        <Image source={require("../assets/OIP.jpg")} style={styles.image} />
+        <Image source={require("../assets/OIP.jpg")} style={styles.image} />
+        <Image source={require("../assets/OIP.jpg")} style={styles.image} />
+        <Image source={require("../assets/OIP.jpg")} style={styles.image} />
       </View>
-
-
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -122,7 +119,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   wrapper: {
-    height: 700, // Adjust the height as needed
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 300,
   },
   slide: {
     width: 300,
