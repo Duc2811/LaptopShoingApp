@@ -3,10 +3,9 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from '../screen/LoginScreen';
 import Register from '../screen/RegisterScreen';
-import Home from '../screen/LoginScreen';
-// types/navigation.d.ts
+import Home from '../screen/HomeScreen';
+
 export type RootStackParamList = {
-  Home: undefined;
   Register: undefined;
   Login: undefined;
 };
@@ -15,21 +14,21 @@ const Stack = createNativeStackNavigator();
 
 const StackNavigator: React.FC = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator initialRouteName="Login">
       <Stack.Screen
         name="Login"
         component={Login}
-        options={{ headerShown: false }} // Corrected headerShown
+        options={{ headerShown: true }}
       />
       <Stack.Screen
         name="Register"
         component={Register}
-        options={{ headerShown: false }} // Corrected headerShown
+        options={{ headerShown: true }}
       />
       <Stack.Screen
         name="Home"
         component={Home}
-        options={{ headerShown: false }} // Corrected headerShown
+        options={{ headerShown: true }}
       />
     </Stack.Navigator>
   );

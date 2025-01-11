@@ -7,18 +7,22 @@ import { doLogin } from "../store/reducer/userReducer";
 import { useDispatch } from "react-redux";
 
 type RootStackParamList = {
+  Login: undefined;
   Home: undefined;
   Register: undefined;
+
 };
 
-type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Home">;
-
-const LoginScreen: React.FC = () => {
+type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Login">;
+interface Props {
+  navigation: LoginScreenNavigationProp;
+}
+const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const navigation = useNavigation<LoginScreenNavigationProp>();
+
   const dispatch = useDispatch();
 
   const handleLogin = async () => {
@@ -38,7 +42,7 @@ const LoginScreen: React.FC = () => {
           token: res.token,
           notification: res.notification,
         }));
-        navigation.navigate("Home")
+        navigation.navigate("Home");
       } else {
         alert("Unexpected response code: " + res.code);
       }
