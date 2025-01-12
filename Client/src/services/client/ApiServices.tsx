@@ -16,3 +16,8 @@ export const userForgotPassword = async (email: string) => {
 export const userOtp = async (email: string, otp: string) => {
     const response = await axios.post('user/otp', { email, otp }, { withCredentials: true });
 }
+
+export const userProfile = async () => {
+    const response = await axios.get('user/user-profile', { withCredentials: true });
+    return response.data;
+}

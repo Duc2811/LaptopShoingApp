@@ -131,10 +131,10 @@ module.exports.otp = async (req, res) => {
 
         if (user) {
             res.cookie('forgotToken', user.token, {
-                httpOnly: true, // Cookie không thể bị truy cập từ JavaScript
-                secure: false,  // Đặt thành true trong môi trường sản xuất (HTTPS)
-                sameSite: 'lax', // Chính sách SameSite
-                maxAge: 3 * 60 * 1000 // Thời gian sống của cookie (3 phút)
+                httpOnly: true, 
+                secure: false,  
+                sameSite: 'lax', 
+                maxAge: 3 * 60 * 1000 
             })
         }
 

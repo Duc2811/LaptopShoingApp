@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, Pressable } from 'react-native';
+import { View, Text, Alert, StyleSheet } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { userRegister } from '../services/client/ApiServices';
-
+import InputBox from '../components/forms/InputBox';
+import SubmitButton from '../components/forms/submitButton';
 
 type RootStackParamList = {
   Home: undefined;
@@ -54,50 +55,50 @@ const RegistrationScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Register</Text>
-      <TextInput
-        style={styles.input}
+      <InputBox
+        inputTitle="Name" 
         placeholder="Name"
         value={name}
         onChangeText={setName}
-      />
-      <TextInput
         style={styles.input}
+      />
+      <InputBox
+        inputTitle="Email" 
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
-      />
-      <TextInput
         style={styles.input}
-        placeholder="Password"
+      />
+      <InputBox
+        inputTitle="Password" 
         secureTextEntry
         value={password}
         onChangeText={setPassword}
-      />
-      <TextInput
         style={styles.input}
-        placeholder="Confirm Password"
+      />
+      <InputBox
+        inputTitle="Confirm Password" 
         secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
-      />
-      <TextInput
         style={styles.input}
+      />
+      <InputBox
+        inputTitle="Phone Number" 
         placeholder="Phone Number"
         value={phone}
         onChangeText={setPhone}
-      />
-      <TextInput
         style={styles.input}
+      />
+      <InputBox
+        inputTitle="Address" 
         placeholder="Address"
         value={address}
         onChangeText={setAddress}
+        style={styles.input}
       />
-      <Button title="Register" onPress={registerUser} />
-      <Pressable onPress={() => navigation.navigate("Login")} style={{ marginTop: 15 }}>
-        <Text style={{ textAlign: "center", color: "gray", fontSize: 16 }}>
-          Already have an account? Sign in
-        </Text>
-      </Pressable>
+      <SubmitButton handleSubmit={registerUser} btnTitle="Register" />
+      <SubmitButton handleSubmit={() => navigation.navigate("Login")} btnTitle="Already have an account? Sign in" />
     </View>
   );
 };

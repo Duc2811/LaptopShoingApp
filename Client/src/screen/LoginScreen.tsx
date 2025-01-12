@@ -1,27 +1,28 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, KeyboardAvoidingView, Pressable, StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { View, Text, KeyboardAvoidingView, Pressable, } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { userLogin } from "../services/client/ApiServices";
 import { doLogin } from "../store/reducer/userReducer";
 import { useDispatch } from "react-redux";
+import InputBox from "../components/forms/InputBox";
+import SubmitButton from "../components/forms/submitButton";
 
 type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Register: undefined;
-
 };
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Login">;
+
 interface Props {
   navigation: LoginScreenNavigationProp;
 }
+
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-
 
   const dispatch = useDispatch();
 
@@ -37,18 +38,20 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         alert(res.message);
       } else if (res.code === 200) {
         alert(res.message);
-        dispatch(doLogin({
-          _id: res.id,
-          token: res.token,
-          notification: res.notification,
-        }));
-        navigation.navigate("Home");
+        dispatch(
+          doLogin({
+            _id: res.id,
+            token: res.token,
+            notification: res.notification,
+          })
+        );
+        navigation.replace("Home");
       } else {
         alert("Unexpected response code: " + res.code);
       }
     } catch (error) {
-      console.error("Lỗi đăng nhập:", error);
-      alert("Có lỗi xảy ra, vui lòng thử lại.");
+      console.error("Login error:", error);
+      alert("An error occurred. Please try again.");
     }
   };
 
@@ -57,89 +60,58 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "white", padding: 10, alignItems: "center" }}>
+    <View className="flex-1 bg-white p-4 items-center">
       <KeyboardAvoidingView behavior="padding">
         <View style={{ marginTop: 100, justifyContent: "center", alignItems: "center" }}>
-          <Text style={{ color: "#4A55A2", fontSize: 17, fontWeight: "600" }}>Login Screen</Text>
           <Text style={{ fontSize: 17, fontWeight: "600", marginTop: 15 }}>
             Don't have an account? Sign up
           </Text>
         </View>
 
-        <View style={{ marginTop: 50 }}>
-          <Text>Email</Text>
-          <TextInput
+        <View className="mt-12 w-full">
+          <InputBox
+            inputTitle="Email"
             value={email}
-            onChangeText={(text) => setEmail(text)}
-            style={styles.input}
+            onChangeText={setEmail}
             placeholder="Enter Your Email"
-            placeholderTextColor={"black"}
+            placeholderTextColor="black"
             keyboardType="email-address"
-            autoCapitalize="none"
+            autoComplete="email"
           />
+
         </View>
 
-        <View style={{ marginTop: 10 }}>
-          <Text>Password</Text>
-          <TextInput
+        <View className="mt-4 w-full">
+          <InputBox
+            inputTitle="Password"
             value={password}
-            onChangeText={(text) => setPassword(text)}
+            onChangeText={setPassword}
             secureTextEntry={!showPassword}
-            style={styles.input}
             placeholder="Enter Your Password"
-            placeholderTextColor={"black"}
+            placeholderTextColor="black"
           />
-          <Pressable onPress={handlePasswordToggle}>
-            <Text style={styles.toggleText}>
+          <Pressable onPress={handlePasswordToggle} className="mt-2">
+            <Text className="text-blue-500 text-base">
               {showPassword ? "Hide Password" : "Show Password"}
             </Text>
           </Pressable>
         </View>
 
-        <Pressable style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
-        </Pressable>
+        <SubmitButton
+          handleSubmit={handleLogin}
+          btnTitle="Login"
+          loading={false}
+          className="mt-12"
+        />
 
-        <Pressable onPress={() => navigation.navigate("Register")} style={{ marginTop: 15 }}>
-          <Text style={{ textAlign: "center", color: "gray", fontSize: 16 }}>
-            Don't have an account? Sign up
+        <Pressable onPress={() => navigation.navigate("Register")} className="mt-4">
+          <Text className="text-center text-gray-500 text-base">
+            Don&apos;t have an account? Sign up
           </Text>
         </Pressable>
       </KeyboardAvoidingView>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  input: {
-    fontSize: 18,
-    borderWidth: 1,
-    borderBottomColor: "gray",
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 10,
-    width: "100%",
-  },
-  button: {
-    width: 200,
-    backgroundColor: "#4A55A2",
-    padding: 15,
-    marginTop: 50,
-    marginLeft: "auto",
-    marginRight: "auto",
-    borderRadius: 20,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  toggleText: {
-    marginTop: 5,
-    color: "blue",
-    fontSize: 16,
-  },
-});
 
 export default LoginScreen;

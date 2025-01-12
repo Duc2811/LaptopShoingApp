@@ -1,28 +1,50 @@
-import React from "react";
-import { View, Image, StyleSheet, ScrollView } from "react-native";
+import React, { useState, useCallback } from "react";
+import { View, Image, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import Footer from "../components/menus/footer"
+
 
 const HomeScreen: React.FC = () => {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+
+    <ScrollView
+      contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <View style={styles.imageContainer}>
-        <Image 
-          source={{ uri: "https://i5.walmartimages.com/asr/3e546ff9-e1ea-458c-8ac5-671673a05fd2_1.93edbfcf20424e848d07e685a4a0e2e1.jpeg" }} 
-          style={styles.image} 
+        <Image
+          source={{ uri: "https://i5.walmartimages.com/asr/3e546ff9-e1ea-458c-8ac5-671673a05fd2_1.93edbfcf20424e848d07e685a4a0e2e1.jpeg" }}
+          style={styles.image}
         />
-        <Image 
-          source={{ uri: "https://th.bing.com/th/id/OIP.dhgcogyWQyBNArDLiWWOlwHaHa?rs=1&pid=ImgDetMain" }} 
-          style={styles.image} 
+        <Image
+          source={{ uri: "https://th.bing.com/th/id/OIP.dhgcogyWQyBNArDLiWWOlwHaHa?rs=1&pid=ImgDetMain" }}
+          style={styles.image}
         />
-        <Image 
-          source={{ uri: "https://th.bing.com/th/id/OIP.F2OfONJmoDM4DWW0FNs-1gHaE8?w=246&h=180&c=7&r=0&o=5&pid=1.7" }} 
-          style={styles.image} 
+        <Image
+          source={{ uri: "https://th.bing.com/th/id/OIP.F2OfONJmoDM4DWW0FNs-1gHaE8?w=246&h=180&c=7&r=0&o=5&pid=1.7" }}
+          style={styles.image}
         />
-        <Image 
-          source={{ uri: "https://s.alicdn.com/@sc04/kf/H3bb6a57e9a834cd9b68db3511cfadc97r.jpg_300x300.jpg" }} 
-          style={styles.image} 
+        <Image
+          source={{ uri: "https://s.alicdn.com/@sc04/kf/H3bb6a57e9a834cd9b68db3511cfadc97r.jpg_300x300.jpg" }}
+          style={styles.image}
         />
       </View>
+      <View style={{ backgroundColor: "#ffffff" }}>
+        <Footer />
+      </View>
     </ScrollView>
+
+
+
   );
 };
 
@@ -40,9 +62,9 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 200,  // Đặt chiều cao cụ thể cho ảnh
+    height: 200,
     resizeMode: 'cover',
-    marginBottom: 10,  // Thêm khoảng cách giữa các ảnh
+    marginBottom: 10,
   },
 });
 
