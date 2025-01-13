@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { View, Image, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import Footer from "../components/menus/footer"
-
+import Banner from "../components/banner/banner"
 
 const HomeScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
@@ -20,6 +20,9 @@ const HomeScreen: React.FC = () => {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
+      <View>
+        <Banner />
+      </View>
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: "https://i5.walmartimages.com/asr/3e546ff9-e1ea-458c-8ac5-671673a05fd2_1.93edbfcf20424e848d07e685a4a0e2e1.jpeg" }}
@@ -56,9 +59,11 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   imageContainer: {
-    width: '100%',
+    width: '20%',
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 10,
   },
   image: {
     width: '100%',

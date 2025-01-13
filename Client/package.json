@@ -43,6 +43,7 @@
     "react-native-snap-carousel": "^3.9.1",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
+    "react-native-x-carousel": "^1.0.1",
     "react-redux": "^9.2.0",
     "redux": "^5.0.1",
     "redux-persist": "^6.0.0",

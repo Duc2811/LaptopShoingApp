@@ -8094,6 +8094,11 @@ react-native-web@*, "react-native-web@>= 0.11", react-native-web@~0.19.13:
     postcss-value-parser "^4.2.0"
     styleq "^0.1.3"
 
+react-native-x-carousel@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/react-native-x-carousel/-/react-native-x-carousel-1.0.1.tgz"
+  integrity sha512-HioYKgsW7RS6EZzVlcLK0PUn/2gk1EF1gv1fCydEEBiGnYjxhtuG+ZKphE2Y4VKRIV4OqgSi3uwPUo1wcR3dvQ==
+
 react-native@*, "react-native@>= 0.64.3", react-native@>=0.73.0, react-native@0.76.6:
   version "0.76.6"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.76.6.tgz"

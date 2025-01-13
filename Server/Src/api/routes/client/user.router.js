@@ -11,6 +11,9 @@ routes.post('/otp', controller.otp)
 routes.post('/reset-password', validate.resetPasswordValidate, controller.reset)
 routes.get('/user-profile', authorization.Authorization, controller.profile)
 routes.patch('/edit-profile', authorization.Authorization, controller.editProfile)
+// routes.post('/verify', controller.verifyEmail)
+// routes.put('/verify-email', controller.verifyToken)
+// routes.post('/reset', controller.resetPassword)
 
 
 module.exports = routes;
