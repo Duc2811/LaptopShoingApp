@@ -1,9 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Login from '../screen/LoginScreen';
-import Register from '../screen/RegisterScreen';
-import Home from '../screen/HomeScreen';
+import Login from '../screen/client/LoginScreen';
+import Register from '../screen/client/RegisterScreen';
+import Home from '../screen/product/HomeScreen';
+import Verify from '../screen/client/VerifyScreen';
 
 export type RootStackParamList = {
   Register: undefined;
@@ -29,6 +30,11 @@ const StackNavigator: React.FC = () => {
       <Stack.Screen
         name="Home"
         component={Home}
+        options={{ headerShown: true }}
+      />
+      <Stack.Screen
+        name="Verify"
+        component={Verify}
         options={{ headerShown: true }}
       />
     </Stack.Navigator>

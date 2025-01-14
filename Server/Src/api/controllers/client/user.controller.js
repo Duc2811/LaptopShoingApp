@@ -3,38 +3,41 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const generalOtp = require('../../../helper/generateRandom');
 const ForgotPassword = require("../../models/fogot-password");
-const sendMailHelper = require('../../../helper/sendEmail')
-const verifyEmail = require("../../models/verify-email");
+const sendEmail = require('../../../helper/sendEmail')
+const VerifyEmail = require("../../models/verify-email");
 
 
 // [POST] api/user/register
 module.exports.register = async (req, res) => {
     try {
-        const { email } = req.body;
-        const emailExits = await Users.findOne({
-            email: email,
-            deleted: false
+        const { email, password, userName, phone, address } = req.body;
+        const salt = await bcrypt.genSalt(saltRounds);
+        const emailExits = await Users.find({
+            email: email
         })
-
         if (emailExits) {
             res.status(409).json({ message: "Email is Exits" })
+            return
         } else {
-            req.body.password = md5(req.body.password)
-            const user = new Users(req.body)
+            const hashPassword = await bcrypt.hash(password, salt)
+            const user = new Users({ email, userName, password: hashPassword, phone, address });
             await user.save();
             res.status(201).json({
                 message: "Register successfully",
                 userId: user.id
             })
+
             const otp = generalOtp.generateOtp(6);
             const objVrtify = {
                 email: email,
                 otp: otp,
                 "expireAt": Date.now()
             }
-            const vertifyEmail = new VertifyEmail(objVrtify);
+            if (!otp) {
+                res.status(509).json({ message: "Error generate otp" })
+            }
+            const vertifyEmail = new VerifyEmail(objVrtify);
             await vertifyEmail.save();
-
             const subject = "Your One-Time Password (OTP) for Account Verification";
             const html = `
                             <!DOCTYPE html>
@@ -101,20 +104,25 @@ module.exports.register = async (req, res) => {
                                         <h3 class="otp">${otp}</h3>
                                         <p>This OTP is valid for the next <strong>3 minutes</strong>. For your security, please do not share this OTP with anyone.</p>
                                         <p>If you did not request this, please ignore this email or contact our support team immediately.</p>
-                                        <p>Thank you,<br>The BoBeoFood Team</p>
+                                        <p>Thank you,<br>The LaptopShopingApp Team</p>
                                     </div>
                                     <div class="email-footer">
-                                        © 2025 BoBeoFood. All rights reserved.
+                                        © 2025 LaptopShopingApp. All rights reserved.
                                     </div>
                                 </div>
                             </body>
                             </html>
                             `;
-            sendEmail.sendEmail(email, subject, html)
+            try {
+                await sendEmail.sendEmail(email, subject, html)
+                console.log('Email sent successfully');
+            } catch (emailError) {
+                console.log('Error sending email:', emailError);
+            }
         }
 
     } catch (error) {
-        res.status(500).json(error)
+        res.status(500).json({ message: "Internal Server Error ", error })
     }
 }
 
@@ -122,6 +130,17 @@ module.exports.register = async (req, res) => {
 module.exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        const userInactive = await Users.findOne({
+            email: email,
+            status: "Inactive",
+        })
+        if (!userInactive) {
+            res.json({
+                code: 606,
+                message: "Your email has not been verified yet. Please check your email for the OTP and use it to verify your account."
+            })
+        }
 
         const user = await Users.findOne({
             email: email,
@@ -161,6 +180,49 @@ module.exports.login = async (req, res) => {
         console.log(error);
     }
 }
+
+module.exports.getUserID = async (req, res) => {
+    const email = req.body;
+    const user = await Users.findOne({
+        email: email
+    })
+    if (!user) {
+        res.json({
+            code: 404,
+            message: "User Not Found"
+        })
+    }
+    const userId = user._id
+    res.json({
+        code: 200,
+        userId: userId
+    })
+}
+
+
+//['POST']api/user/verify
+module.exports.vertifyEmail = async (req, res) => {
+    try {
+        const { otp, userId } = req.body;
+        const optCorrect = await VerifyEmail.findOne({
+            otp: otp
+        })
+        if (!optCorrect) {
+            return res.status(400).json({ message: "OTP Not Correct" })
+        }
+        await Users.updateOne({
+            _id: userId
+        }, {
+            status: "active"
+        })
+        res.status(201).json({
+            message: "Vertify Successfully"
+        })
+    } catch (error) {
+        res.status(500).json(error)
+    }
+}
+
 // [POST] api/forgot-password
 module.exports.forgot = async (req, res) => {
     try {
@@ -181,7 +243,7 @@ module.exports.forgot = async (req, res) => {
             otp: otp,
             "expireAt": Date.now()
         }
-        const vertifyEmail = new VertifyEmail(objVrtify);
+        const vertifyEmail = new VerifyEmail(objVrtify);
         await vertifyEmail.save();
         const subject = "Your One-Time Password (OTP) for Account Verification";
         const html = `
@@ -249,10 +311,10 @@ module.exports.forgot = async (req, res) => {
                                         <h3 class="otp">${otp}</h3>
                                         <p>This OTP is valid for the next <strong>3 minutes</strong>. For your security, please do not share this OTP with anyone.</p>
                                         <p>If you did not request this, please ignore this email or contact our support team immediately.</p>
-                                        <p>Thank you,<br>The BoBeoFood Team</p>
+                                        <p>Thank you,<br>The LaptopShopingApp Team</p>
                                     </div>
                                     <div class="email-footer">
-                                        © 2025 BoBeoFood. All rights reserved.
+                                        © 2025 LaptopShopingApp. All rights reserved.
                                     </div>
                                 </div>
                             </body>
@@ -265,69 +327,12 @@ module.exports.forgot = async (req, res) => {
 }
 
 
-//['POST']api/user/verify
-module.exports.vertifyEmail = async (req, res) => {
-    try {
-        const { otp, userId } = req.body;
-        const optCorrect = await VertifyEmail.findOne({
-            otp: otp
-        })
-        if (!optCorrect) {
-            return res.status(400).json({ message: "OTP Not Correct" })
-        }
-        await Users.updateOne({
-            _id: userId
-        }, {
-            status: "active"
-        })
-        res.status(201).json({
-            message: "Vertify Successfully"
-        })
-    } catch (error) {
-        res.status(500).json(error)
-    }
-}
-
-
-module.exports.verifyToken = async (req, res) => {
-    try {
-        const { token } = req.params;
-
-        // Giải mã token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const email = decoded.email;
-
-        const user = await Users.findOne({ email });
-        if (!user) {
-            return res.json({
-                code: 404,
-                message: "User not found.",
-            });
-        }
-
-        // Cập nhật trạng thái người dùng
-        await Users.updateOne({ email }, { status: "active" });
-
-        res.json({
-            code: 200,
-            message: "Email verified successfully.",
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(400).json({
-            code: 400,
-            message: "Invalid or expired token.",
-        });
-    }
-};
-
-
 
 // [POST] api/user/otp
 module.exports.otp = async (req, res) => {
     try {
         const { otp, email } = req.body;
-        const otpExits = await VertifyEmail.findOne({
+        const otpExits = await VerifyEmail.findOne({
             email: email,
             otp: otp
         })
@@ -351,16 +356,29 @@ module.exports.otp = async (req, res) => {
 // [POST] api/user/reset-password
 module.exports.reset = async (req, res) => {
     const token = req.body.token;
-    const newPassword = md5(req.body.password);
-    if (!token) {
-        return res.status(401).json({
-            message: "User Not Found"
+    const salt = await bcrypt.genSalt(saltRounds);
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+
+    if (password !== confirmPassword) {
+        return res.status(400).json({
+            message: "Password Not Match"
         })
     }
-    await Users.updateOne({ token: token }, { password: newPassword })
-    res.status(200).json({
-        message: "Reset Password Successfully"
-    })
+    else {
+        const user = await Users.findOne({ token: token });
+        if (!user) {
+            res.status(401).json({
+                message: "User Not Found"
+            })
+        }
+        const newPassword = await bcrypt.hash(password, salt);
+        console.log(newPassword)
+        await Users.updateOne({ token: token }, { password: newPassword })
+        res.status(200).json({
+            message: "Reset Password Successfully"
+        })
+    }
 }
 
 

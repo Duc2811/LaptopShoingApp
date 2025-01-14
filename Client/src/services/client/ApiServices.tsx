@@ -8,16 +8,29 @@ export const userLogin = async (email: string, password: string) => {
     const response = await axios.post('user/login', { email, password });
     return response.data;
 }
-export const userForgotPassword = async (email: string) => {
-    const response = await axios.post('user/forgot-password', { email });
-    return response.data;
-}
 
-export const userOtp = async (email: string, otp: string) => {
-    const response = await axios.post('user/otp', { email, otp }, { withCredentials: true });
-}
 
 export const userProfile = async () => {
     const response = await axios.get('user/user-profile', { withCredentials: true });
     return response.data;
+}
+
+
+export const verifyEmail = async (otp: string, userId: string) => {
+    const response = await axios.post('user/verify', { otp, userId }, { withCredentials: true });
+    return response.data;
+}
+
+export const forgotPassword = async (email: string) => {
+    return await axios.post('user/forgotPassword', { email }, { withCredentials: true });
+}
+
+
+export const otp = async (otp: string, email: string) => {
+    const response = await axios.post('user/otp', { otp, email }, { withCredentials: true });
+    return response.data;
+}
+
+export const resetPassword = async (password: string, confirmPassword: string, token: string) => {
+    return await axios.post('user/resetPassword', { password, confirmPassword, token }, { withCredentials: true })
 }

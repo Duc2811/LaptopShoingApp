@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { userRegister } from '../services/client/ApiServices';
-import InputBox from '../components/forms/InputBox';
-import SubmitButton from '../components/forms/submitButton';
+import { userRegister } from '../../services/client/ApiServices';
+import InputBox from '../../components/forms/InputBox';
+import SubmitButton from '../../components/forms/submitButton';
 
 type RootStackParamList = {
   Home: undefined;

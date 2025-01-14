@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { View, Text, KeyboardAvoidingView, Pressable, } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { userLogin } from "../services/client/ApiServices";
-import { doLogin } from "../store/reducer/userReducer";
+import { userLogin } from "../../services/client/ApiServices";
+import { doLogin } from "../../store/reducer/userReducer";
 import { useDispatch } from "react-redux";
-import InputBox from "../components/forms/InputBox";
-import SubmitButton from "../components/forms/submitButton";
+import InputBox from "../../components/forms/InputBox";
+import SubmitButton from "../../components/forms/submitButton";
 
 type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Register: undefined;
+  Verify: undefined;
 };
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Login">;
@@ -46,7 +47,11 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           })
         );
         navigation.replace("Home");
-      } else {
+      } else if(res.code === 606){
+        alert(res.message);
+        navigation.replace("Verify");
+      }
+      else {
         alert("Unexpected response code: " + res.code);
       }
     } catch (error) {

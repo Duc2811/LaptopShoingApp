@@ -16,6 +16,11 @@ const categorySchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    status: {
+        type: String,
+        enum: ['active', 'inactive'],
+        default: 'active'
+    },
     productManager: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
