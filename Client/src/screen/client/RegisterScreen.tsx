@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { userRegister } from '../../services/client/ApiServices';
+import { userRegister as Register } from '../../services/client/ApiServices';
 import InputBox from '../../components/forms/InputBox';
 import SubmitButton from '../../components/forms/submitButton';
+import { validateRegistration } from '@/src/modal/ResgisterValidate';
 
 type RootStackParamList = {
   Home: undefined;
   Register: undefined;
   Login: undefined;
+  Verify: { email: string };
 };
 
 type RegistrationScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
@@ -18,37 +20,31 @@ interface Props {
 }
 
 const RegistrationScreen: React.FC<Props> = ({ navigation }) => {
-  const [name, setName] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [phone, setPhone] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [address, setAddress] = useState<string>('');
+  const [userName, setuserName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
 
-  const registerUser = async () => {
-    if (!name || !email || !password) {
-      Alert.alert("Please fill in all fields.");
+  const handleRegisterUser = async () => {
+    validateRegistration(userName, email, password, confirmPassword, phone, address);
+    if (!validateRegistration(userName, email, password, confirmPassword, phone, address).valid) {
+      alert(validateRegistration(userName, email, password, confirmPassword, phone, address).message);
       return;
     }
-
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("email", email);
-    formData.append("password", password);
-    formData.append("phone", phone);
-    formData.append("address", address);
-
     try {
-      const response: any = await userRegister(name, email, password, phone, address);
-      if (response && response.data.code === 200) {
-        Alert.alert("Registration Successful");
-        navigation.navigate('Login');
-      } else {
-        Alert.alert(response.data.message || "Registration failed");
+      const response = await Register(userName, email, password, phone, address);
+      if (response?.code === 402 || response?.code === 409 || response?.code === 509) {
+        alert(`Error ${response?.code}: ${response?.message}`);
+        return;
       }
-    } catch (error) {
-      console.error("Error during registration:", error);
-      Alert.alert("An error occurred during registration.");
+      else {
+        alert("Registration Successful");
+        navigation.navigate('Verify', { email });
+      }
+    } catch (error: any) {
+      alert("An error occurred during registration.");
     }
   };
 
@@ -56,48 +52,50 @@ const RegistrationScreen: React.FC<Props> = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Register</Text>
       <InputBox
-        inputTitle="Name" 
-        placeholder="Name"
-        value={name}
-        onChangeText={setName}
+        inputTitle="Name"
+        placeholder="Enter your name"
+        value={userName}
+        onChangeText={setuserName}
         style={styles.input}
       />
       <InputBox
-        inputTitle="Email" 
-        placeholder="Email"
+        inputTitle="Email"
+        placeholder="Enter your email"
         value={email}
         onChangeText={setEmail}
         style={styles.input}
       />
       <InputBox
-        inputTitle="Password" 
+        inputTitle="Password"
+        placeholder="Enter your password"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
         style={styles.input}
       />
       <InputBox
-        inputTitle="Confirm Password" 
+        inputTitle="Confirm Password"
+        placeholder="Re-enter your password"
         secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         style={styles.input}
       />
       <InputBox
-        inputTitle="Phone Number" 
-        placeholder="Phone Number"
+        inputTitle="Phone"
+        placeholder="Enter your phone number"
         value={phone}
         onChangeText={setPhone}
         style={styles.input}
       />
       <InputBox
-        inputTitle="Address" 
-        placeholder="Address"
+        inputTitle="Address"
+        placeholder="Enter your address"
         value={address}
         onChangeText={setAddress}
         style={styles.input}
       />
-      <SubmitButton handleSubmit={registerUser} btnTitle="Register" />
+      <SubmitButton handleSubmit={handleRegisterUser} btnTitle="Register" />
       <SubmitButton handleSubmit={() => navigation.navigate("Login")} btnTitle="Already have an account? Sign in" />
     </View>
   );
@@ -108,10 +106,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 16,
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 24,
+    fontWeight: 'bold',
     marginBottom: 16,
+    textAlign: 'center',
   },
   input: {
     height: 40,
@@ -119,6 +120,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 12,
     paddingHorizontal: 10,
+    borderRadius: 8,
   },
 });
 

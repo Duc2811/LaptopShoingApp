@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { View, Text, Image, StyleSheet, ScrollView, RefreshControl } from "react-native";
-import Footer from "../components/menus/footer";
-import Banner from "../components/banner/banner";
-import ProductDetails from "../components/product/productDetail";
-import { getAllProduct } from "../services/client/ApiProduct";
-import ProductModel from "../components/product/productModal";
+import Footer from "../../components/menus/footer";
+import Banner from "../../components/banner/banner";
+import ProductDetails from "../../components/product/productDetail";
+import { getAllProduct } from "../../services/client/ApiProduct";
+import ProductModel from "../../components/product/productModal";
 
 const HomeScreen: React.FC = () => {
   const [product, setProduct] = useState<ProductModel | null>(null);

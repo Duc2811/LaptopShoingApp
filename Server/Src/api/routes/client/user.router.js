@@ -6,11 +6,13 @@ const authorization = require('../../../middleware/user.middleware')
 
 routes.post('/login', validate.loginValidate, controller.login)
 
-routes.post('/register', validate.registerValidate, controller.register)
+routes.post('/register', controller.register)
 routes.post('/verify', controller.vertifyEmail)
 
+routes.get('/getUserID/:email', controller.getUserID)
 
-routes.post('/forgotPassword',  controller.forgot)
+
+routes.post('/forgotPassword', controller.forgot)
 routes.post('/otp', controller.otp)
 routes.post('/resetPassword', validate.resetPasswordValidate, controller.reset)
 

@@ -5,28 +5,33 @@ import { forgotPassword, otp, resetPassword } from '@/src/services/client/ApiSer
 import InputBox from '@/src/components/forms/InputBox';
 import SubmitButton from '@/src/components/forms/submitButton';
 import { KeyboardAvoidingView } from 'native-base/lib/commonjs/components/basic';
+import { RouteProp } from "@react-navigation/native";
+
 
 type RootStackParamList = {
     Home: undefined,
     Register: undefined,
     Login: undefined,
     Verify: undefined,
-    ResetPassword: undefined
+    ResetPassword: { token: string }
 }
 
+type ResetPasswordScreenNavigationProp = StackNavigationProp<RootStackParamList, "ResetPassword">;
+type ResetPasswordScreenRouteProp = RouteProp<RootStackParamList, "ResetPassword">;
 
-type ResetPasswordScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ResetPassword'>
-type Props = {
+interface Props {
     navigation: ResetPasswordScreenNavigationProp;
+    route: ResetPasswordScreenRouteProp;
 }
-
-const ResetPassword: React.FC<Props> = ({ navigation }) => {
-
+const ResetPassword: React.FC<Props> = ({ navigation, route }) => {
+    const { token } = route.params;
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
-    const token = navigation.getId();
 
     const handleReset = async () => {
+        if (password !== confirmPassword) {
+            return alert("Passwords do not match");
+        }
         try {
             const response = await resetPassword(password, confirmPassword, token);
             if (response.data.code === 200) {

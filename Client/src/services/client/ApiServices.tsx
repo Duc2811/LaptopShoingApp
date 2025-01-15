@@ -1,9 +1,19 @@
 import axios from "../../utils/CustomizeApi";
 
-export const userRegister = async (username: string, email: string, password: string, phone: String, address: String) => {
-    const response = await axios.post('user/register', { username, email, password, phone, address });
-    return response.data;
-}
+export const userRegister = async (username: string, email: string, password: string, phone: string, address: string) => {
+    try {
+        const response = await axios.post('user/register', {
+            username,
+            email,
+            password,
+            phone,
+            address,
+        });
+        return response.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || "Registration failed");
+    }
+};
 export const userLogin = async (email: string, password: string) => {
     const response = await axios.post('user/login', { email, password });
     return response.data;
@@ -16,8 +26,8 @@ export const userProfile = async () => {
 }
 
 
-export const verifyEmail = async (otp: string, userId: string) => {
-    const response = await axios.post('user/verify', { otp, userId }, { withCredentials: true });
+export const verifyEmail = async (otp: string, email: String) => {
+    const response = await axios.post('user/verify', { otp, email }, { withCredentials: true });
     return response.data;
 }
 

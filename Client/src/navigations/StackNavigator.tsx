@@ -5,14 +5,22 @@ import Login from '../screen/client/LoginScreen';
 import Register from '../screen/client/RegisterScreen';
 import Home from '../screen/product/HomeScreen';
 import Verify from '../screen/client/VerifyScreen';
+import ForgotPassword from '../screen/client/ForgotPassword';
+import ForgotOTP from '../screen/client/ForgotOTP';
+import ResetPassword from '../screen/client/ResetPassword';
+
 
 export type RootStackParamList = {
   Register: undefined;
   Login: undefined;
   Home: undefined;
+  Verify: { email: string };
+  ForgotPassword: undefined;
+  ForgotOTP: { email: string };
+  ResetPassword: { token: string };
 };
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const StackNavigator: React.FC = () => {
   return (
@@ -35,6 +43,21 @@ const StackNavigator: React.FC = () => {
       <Stack.Screen
         name="Verify"
         component={Verify}
+        options={{ headerShown: true }}
+      />
+      <Stack.Screen
+        name="ForgotPassword"
+        component={ForgotPassword}
+        options={{ headerShown: true }}
+      />
+      <Stack.Screen
+        name="ForgotOTP"
+        component={ForgotOTP}
+        options={{ headerShown: true }}
+      />
+      <Stack.Screen
+        name="ResetPassword"
+        component={ResetPassword}
         options={{ headerShown: true }}
       />
     </Stack.Navigator>

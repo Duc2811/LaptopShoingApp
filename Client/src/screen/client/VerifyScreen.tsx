@@ -3,48 +3,68 @@ import React, { useState } from 'react'
 import { StackNavigationProp } from "@react-navigation/stack";
 import OTPInput from '@/src/components/forms/OtpInput';
 import { verifyEmail } from '@/src/services/client/ApiServices';
+import SubmitButton from '@/src/components/forms/submitButton';
+import { RouteProp } from '@react-navigation/native';
 
 
 type RootStackParamList = {
     Login: undefined;
     Home: undefined;
     Register: undefined;
-    Verify: undefined;
+    Verify: { email: string };
 }
 
 type VerifyScreenNavigationProp = StackNavigationProp<RootStackParamList, "Verify">;
+type VerifyScreenRouteProp = RouteProp<RootStackParamList, 'Verify'>;
 
 interface Props {
-    navigation: VerifyScreenNavigationProp
+    navigation: VerifyScreenNavigationProp;
+    route: VerifyScreenRouteProp;
 }
 
-const VerifyScreen: React.FC<Props> = ({ navigation }) => {
+
+const VerifyScreen: React.FC<Props> = ({ navigation, route }) => {
+    const { email } = route.params;
     const [otp, setOtp] = useState<string>('');
-    const [userID, setUserID] = useState<string>('');
 
     const handleVerify = async () => {
         try {
-            const response = await verifyEmail(otp, userID);
-            if (response.code === 400) {
-                alert(response.message);
+
+            if (!otp) {
+                alert("Please enter the OTP.");
+                return;
             }
-            else if (response.code === 500) {
+            const response = await verifyEmail(otp, email);
+            if (response.code === 401 || response.code === 500) {
                 alert(response.message);
-            }
-            else if (response.code === 201) {
-                alert(response.message);
+                console.log(response.message);
+            } else {
+                alert('Verification successful');
                 navigation.navigate('Login');
             }
         } catch (error) {
-            console.error('Error verifying email:', error);
+            alert('An error occurred during verification.');
+            console.log(error);
         }
-    }
 
+    };
+
+
+
+    const handleCodeFilled = (code: string) => {
+        setOtp(code);
+    }
 
     return (
         <View style={styles.container}>
             <Text>Verify Screen</Text>
-            <OTPInput />
+            <Text>Enter OTP</Text>
+            <OTPInput onCodeFilled={handleCodeFilled}
+            />
+            <SubmitButton
+                btnTitle="Verify"
+                handleSubmit={handleVerify}
+            />
         </View>
     )
 }

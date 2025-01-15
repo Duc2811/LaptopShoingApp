@@ -2,7 +2,6 @@ const Users = require("../../models/user")
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const generalOtp = require('../../../helper/generateRandom');
-const ForgotPassword = require("../../models/fogot-password");
 const sendEmail = require('../../../helper/sendEmail')
 const VerifyEmail = require("../../models/verify-email");
 
@@ -10,15 +9,16 @@ const VerifyEmail = require("../../models/verify-email");
 // [POST] api/user/register
 module.exports.register = async (req, res) => {
     try {
-        const { email, password, userName, phone, address } = req.body;
+        const { userName, email, password, phone, address } = req.body;
         const salt = await bcrypt.genSalt(saltRounds);
         const emailExits = await Users.find({
             email: email
         })
-        if (emailExits) {
+        if (!emailExits) {
             res.status(409).json({ message: "Email is Exits" })
             return
-        } else {
+        }
+        else {
             const hashPassword = await bcrypt.hash(password, salt)
             const user = new Users({ email, userName, password: hashPassword, phone, address });
             await user.save();
@@ -135,7 +135,8 @@ module.exports.login = async (req, res) => {
             email: email,
             status: "Inactive",
         })
-        if (!userInactive) {
+        console.log(userInactive);
+        if (userInactive) {
             res.json({
                 code: 606,
                 message: "Your email has not been verified yet. Please check your email for the OTP and use it to verify your account."
@@ -182,34 +183,61 @@ module.exports.login = async (req, res) => {
 }
 
 module.exports.getUserID = async (req, res) => {
-    const email = req.body;
-    const user = await Users.findOne({
-        email: email
-    })
-    if (!user) {
+    try {
+        const { email } = req.params;
+
+        if (!email) {
+            return res.status(400).json({
+                code: 400,
+                message: "Email is required"
+            });
+        }
+
+        const user = await Users.findOne({ email: email });
+
+        if (!user) {
+            return res.status(404).json({
+                code: 404,
+                message: "User Not Found"
+            });
+        }
+
+        const userId = user._id;
         res.json({
-            code: 404,
-            message: "User Not Found"
-        })
+            code: 200,
+            message: "User ID Found",
+            userId: userId
+        });
+    } catch (error) {
+        console.error("Error fetching user ID:", error);
+        res.status(500).json({
+            code: 500,
+            message: "Internal Server Error",
+            error: error.message
+        });
     }
-    const userId = user._id
-    res.json({
-        code: 200,
-        userId: userId
-    })
-}
+};
+
 
 
 //['POST']api/user/verify
 module.exports.vertifyEmail = async (req, res) => {
     try {
-        const { otp, userId } = req.body;
+        const { otp, email } = req.body;
+
         const optCorrect = await VerifyEmail.findOne({
             otp: otp
         })
         if (!optCorrect) {
             return res.status(400).json({ message: "OTP Not Correct" })
         }
+
+
+        const userData = await Users.findOne({
+            email: email
+        })
+        const userId = userData._id
+
         await Users.updateOne({
             _id: userId
         }, {
@@ -236,7 +264,7 @@ module.exports.forgot = async (req, res) => {
                 message: "Email Not Exits"
             })
         }
-        res.status(200).json({ email, message: "Email is correct" })
+        
         const otp = generalOtp.generateOtp(6);
         const objVrtify = {
             email: email,

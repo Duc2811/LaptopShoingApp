@@ -12,6 +12,7 @@ type RootStackParamList = {
   Home: undefined;
   Register: undefined;
   Verify: undefined;
+  ForgotPassword: undefined;
 };
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Login">;
@@ -37,6 +38,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       const res = await userLogin(email.trim(), password.trim());
       if (res.code === 402) {
         alert(res.message);
+        console.log(res.message);
       } else if (res.code === 200) {
         alert(res.message);
         dispatch(
@@ -47,7 +49,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           })
         );
         navigation.replace("Home");
-      } else if(res.code === 606){
+      } else if (res.code === 606) {
         alert(res.message);
         navigation.replace("Verify");
       }
@@ -112,6 +114,11 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         <Pressable onPress={() => navigation.navigate("Register")} className="mt-4">
           <Text className="text-center text-gray-500 text-base">
             Don&apos;t have an account? Sign up
+          </Text>
+        </Pressable>
+        <Pressable onPress={() => navigation.navigate("ForgotPassword")} className="mt-4">
+          <Text className="text-center text-gray-500 text-base">
+            Forgot Password ?
           </Text>
         </Pressable>
       </KeyboardAvoidingView>
