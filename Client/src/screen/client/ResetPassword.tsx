@@ -48,31 +48,29 @@ const ResetPassword: React.FC<Props> = ({ navigation, route }) => {
 
     return (
         <View>
-            <KeyboardAvoidingView behavior="position" >
-                <Text>ResetPassword</Text>
-                <InputBox
-                    inputTitle="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    placeholder="Enter Your Password"
-                    placeholderTextColor="black"
-                    autoComplete="password"
-                />
-                <InputBox
-                    inputTitle="Confirm Password"
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    placeholder="Enter Your Confirm Password"
-                    placeholderTextColor="black"
-                    autoComplete="password"
-                />
-                <SubmitButton
-                    handleSubmit={handleReset}
-                    btnTitle="Reset Password"
-                    loading={false}
-                    className='mt-12'
-                />
-            </KeyboardAvoidingView>
+            <Text>ResetPassword</Text>
+            <InputBox
+                inputTitle="Password"
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Enter Your Password"
+                placeholderTextColor="black"
+                autoComplete="password"
+            />
+            <InputBox
+                inputTitle="Confirm Password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Enter Your Confirm Password"
+                placeholderTextColor="black"
+                autoComplete="password"
+            />
+            <SubmitButton
+                handleSubmit={handleReset}
+                btnTitle="Reset Password"
+                loading={false}
+                className='mt-12'
+            />
         </View>
     )
 }

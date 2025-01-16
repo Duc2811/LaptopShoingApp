@@ -4,12 +4,13 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 import { StyleSheet, View, Text, TextInput, Button, Alert } from "react-native";
 import SubmitButton from '../../components/forms/submitButton'
-
+import OTPInput from '@/src/components/forms/OtpInput';
 
 type RootStackParamList = {
     Login: undefined;
     Home: undefined;
     Register: undefined;
+    ForgotPassword: undefined;
     ForgotOTP: { email: string };
     ResetPassword: { token: string };
 };
@@ -21,46 +22,52 @@ interface Props {
     navigation: OTPScreenNavigationProp;
     route: OTPScreenRouteProp;
 }
+
 const ForgotOTP: React.FC<Props> = ({ navigation, route }) => {
     const { email } = route.params;
     const [otp, setOtp] = useState<string>("");
 
+    const handleCodeFilled = (code: string) => {
+        setOtp(code);
+    }
+
     const handelSendOtp = async () => {
         if (!otp) {
-            return Alert.alert("Validation Error", "Please enter the OTP");
+            return alert("Please enter the OTP");
         }
 
         try {
             const res = await OtpForgot(otp, email);
-            if (res.code === 402) {
-                Alert.alert("Error", res.message);
-            } else if (res.code === 200) {
-                navigation.navigate("ResetPassword", { token: res.token });
-            }
+            console.log(res.message);
+            // if (res.code === 400 || res.code === 401) {
+            //     alert("Error", res.message);
+            //     console.log(res.message);
+            // }
+
+            // navigation.navigate("ResetPassword", { token: res.token });
+            // console.log(res.message);
         } catch (error) {
             console.error("Error verifying OTP:", error);
-            Alert.alert("Error", "Failed to verify OTP");
+            alert("Failed to verify OTP");
         }
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.header}>Verify OTP</Text>
+            <Text style={styles.header}>Forgot Password OTP</Text>
             <Text style={styles.content}>
                 Enter the OTP sent to your email address <Text style={styles.email}>{email}</Text>. Use it to reset your
                 password.
             </Text>
-            <TextInput
-                style={styles.input}
-                value={otp}
-                onChangeText={setOtp}
-                placeholder="Enter OTP"
-                keyboardType="number-pad"
-            />
-            <SubmitButton
-                btnTitle="Verify"
-                handleSubmit={handelSendOtp}
-            />
+            <View>
+                <OTPInput onCodeFilled={handleCodeFilled} />
+            </View>
+            <View style={styles.buttonZ}>
+                <SubmitButton
+                    btnTitle="Verify"
+                    handleSubmit={handelSendOtp}
+                />
+            </View>
         </View>
     );
 };
@@ -84,13 +91,14 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "#000",
     },
-    input: {
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 16,
-    },
+    buttonZ: {
+        marginTop: 20,
+        marginBottom: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+    }
+
 });
 
 export default ForgotOTP;

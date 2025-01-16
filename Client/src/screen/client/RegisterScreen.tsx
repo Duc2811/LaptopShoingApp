@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Alert, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { userRegister as Register } from '../../services/client/ApiServices';
 import InputBox from '../../components/forms/InputBox';
@@ -96,7 +96,12 @@ const RegistrationScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.input}
       />
       <SubmitButton handleSubmit={handleRegisterUser} btnTitle="Register" />
-      <SubmitButton handleSubmit={() => navigation.navigate("Login")} btnTitle="Already have an account? Sign in" />
+
+      <Pressable onPress={() => navigation.navigate("Login")} className="mt-4" style={styles.pressable}>
+        <Text className="text-center text-gray-500 text-base">
+          Already have an account? Sign in
+        </Text>
+      </Pressable>
     </View>
   );
 };
@@ -104,9 +109,10 @@ const RegistrationScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     padding: 16,
     backgroundColor: '#fff',
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: 24,
@@ -122,6 +128,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 8,
   },
+  pressable: {
+    marginTop: 20,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  }
 });
 
 export default RegistrationScreen;

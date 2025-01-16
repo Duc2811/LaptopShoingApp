@@ -61,10 +61,12 @@ const VerifyScreen: React.FC<Props> = ({ navigation, route }) => {
             <Text>Enter OTP</Text>
             <OTPInput onCodeFilled={handleCodeFilled}
             />
-            <SubmitButton
-                btnTitle="Verify"
-                handleSubmit={handleVerify}
-            />
+            <View style={styles.buttonZ}>
+                <SubmitButton
+                    btnTitle="Verify"
+                    handleSubmit={handleVerify}
+                />
+            </View>
         </View>
     )
 }
@@ -75,8 +77,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 16
+    },
+    buttonZ: {
+        marginTop: 20,
+        marginBottom: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
     }
-
 })
 
 

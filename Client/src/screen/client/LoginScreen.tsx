@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, KeyboardAvoidingView, Pressable, } from "react-native";
+import { View, Text, KeyboardAvoidingView, Pressable, StyleSheet } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { userLogin } from "../../services/client/ApiServices";
 import { doLogin } from "../../store/reducer/userReducer";
 import { useDispatch } from "react-redux";
 import InputBox from "../../components/forms/InputBox";
 import SubmitButton from "../../components/forms/submitButton";
+import button from "native-base/lib/module/theme/components/button";
+import pressable from "native-base/lib/module/theme/components/pressable";
 
 type RootStackParamList = {
   Login: undefined;
@@ -67,11 +69,11 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <View className="flex-1 bg-white p-4 items-center">
+    <View className="flex-1 bg-white p-4 items-center" style={style.container}>
       <KeyboardAvoidingView behavior="padding">
         <View style={{ marginTop: 100, justifyContent: "center", alignItems: "center" }}>
           <Text style={{ fontSize: 17, fontWeight: "600", marginTop: 15 }}>
-            Don't have an account? Sign up
+            Login to your account
           </Text>
         </View>
 
@@ -111,12 +113,12 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           className="mt-12"
         />
 
-        <Pressable onPress={() => navigation.navigate("Register")} className="mt-4">
+        <Pressable onPress={() => navigation.navigate("Register")} className="mt-4" style={style.pressable}>
           <Text className="text-center text-gray-500 text-base">
             Don&apos;t have an account? Sign up
           </Text>
         </Pressable>
-        <Pressable onPress={() => navigation.navigate("ForgotPassword")} className="mt-4">
+        <Pressable onPress={() => navigation.navigate("ForgotPassword")} className="mt-4" style={style.pressable}>
           <Text className="text-center text-gray-500 text-base">
             Forgot Password ?
           </Text>
@@ -125,5 +127,20 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     </View>
   );
 };
+
+const style = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  pressable: {
+    marginTop: 20,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  }
+});
 
 export default LoginScreen;

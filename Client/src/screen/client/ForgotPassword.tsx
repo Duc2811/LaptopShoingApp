@@ -13,25 +13,33 @@ type RootStackParamList = {
     ForgotOTP: { email: string };
 };
 
-type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "ForgotPassword">;
+type ForgotPasswordScreenNavigationProp = StackNavigationProp<RootStackParamList, "ForgotPassword">;
 
-interface Props {
-    navigation: LoginScreenNavigationProp;
+interface ForgotPasswordProps {
+    navigation: ForgotPasswordScreenNavigationProp;
 }
 
-const ForgotPassword: React.FC<Props> = ({ navigation }) => {
+const ForgotPassword: React.FC<ForgotPasswordProps> = ({ navigation }) => {
     const [email, setEmail] = useState<string>("");
 
     const handleForgotPassword = async () => {
+        if (!email) {
+            alert("Please enter your email address.");
+            return;
+        }
         try {
             const response = await forgotPassword(email);
+
             if (response.data.code === 401 || response.data.code === 500) {
                 alert(response.data.message);
                 console.log(response.data.message);
                 return;
             }
-            alert(response.data.message);
-            navigation.navigate("ForgotOTP", { email });
+            else if (response.data.code === 200) {
+                navigation.navigate("ForgotOTP", { email })
+                alert(response.data.message);
+                console.log(response.data.message);
+            }
         } catch (error) {
             console.error("Error sending forgot password email:", error);
         }
