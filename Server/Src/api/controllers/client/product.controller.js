@@ -2,12 +2,12 @@ const Product = require('../../models/product')
 const PaginationHelper = require('../../../helper/pagination')
 const User = require('../../models/user')
 const Category = require('../../models/category')
+const SubCategory = require('../../models/subCategory')
 
-
-//[Post] api/addProducts
+//[Post] api/products/addProducts
 module.exports.addProduct = async (req, res) => {
     try {
-        const { name, price, image, description, category, quantity, sold, saleOf, salePrice } = req.body;
+        const { name, price, image, description, category, subcategory, quantity, sold, saleOf, salePrice } = req.body;
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
 
@@ -15,23 +15,34 @@ module.exports.addProduct = async (req, res) => {
             return res.status(401).json({ message: 'Token is missing or invalid!' });
         }
 
-        const productManager = await User.findOne({ token: token });
-
+        const productManager = await User.findOne({ token });
         if (!productManager || productManager.role !== 'productManager') {
             return res.status(401).json({ message: 'User not authorized to add product or User not found!!!' });
         }
-        const categories = await Category.findOne({ name: category }).lean();
-        if (!categories) {
-            return res.status(400).json({ message: 'Category not found' });
+
+        const categoryDoc = await Category.findOne({ name: category });
+        if (!categoryDoc) {
+            return res.status(400).json({ message: 'Category not found!' });
         }
 
+        if (subcategory) {
+            const subcategoryDoc = await SubCategory.findOne({
+                name: subcategory,
+                category: categoryDoc._id
+            });
+            if (!subcategoryDoc) {
+                return res.status(400).json({
+                    message: 'SubCategory not found or does not belong to the provided Category!'
+                });
+            }
+        }
         const product = new Product({
             productManager: productManager._id,
             name,
             price,
             image,
             description,
-            category: categories._id,
+            category: categoryDoc._id,
             quantity,
             sold,
             saleOf,
@@ -42,62 +53,61 @@ module.exports.addProduct = async (req, res) => {
 
         res.status(201).json({ message: 'Product created successfully', product });
     } catch (err) {
-        res.status(500).json({ message: err.message + " add Product Error" });
+        res.status(500).json({ message: err.message + ' add Product Error' });
     }
-}
+};
 
 
-
-//[Put] api/products/:id
+//[Put] api/products/updateProduct/:id
 module.exports.updateProduct = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { name, price, image, description, category, quantity, sold } = req.body;
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ message: 'Token is missing or invalid!' });
-        }
-        const productManager = await User.findOne({ token: token });
-        if (!productManager || productManager.role !== 'productManager') {
-            return res.status(401).json({ message: 'User not authorized to update product or User not found!!!' });
-        }
-        const product = await Product.findById(id);
+        const { productId } = req.params;
+        const { name, price, image, description, category, subcategory, quantity, sold, saleOf, salePrice } = req.body;
+
+        const product = await Product.findById(productId);
         if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
+            return res.status(404).json({ message: 'Product not found!' });
         }
-        let categoryDoc = null;
+        let categoryId;
         if (category) {
-            categoryDoc = await Category.findOne({ name: category }).lean();
+            const categoryDoc = await Category.findOne({ name: category });
             if (!categoryDoc) {
-                return res.status(400).json({ message: 'Category not found' });
+                return res.status(400).json({ message: 'Category not found!' });
+            }
+            categoryId = categoryDoc._id;
+        }
+        if (subcategory) {
+            const subcategoryDoc = await SubCategory.findOne({
+                name: subcategory,
+                category: categoryId || product.category
+            });
+            if (!subcategoryDoc) {
+                return res.status(400).json({
+                    message: 'SubCategory not found or does not belong to the provided Category!'
+                });
             }
         }
-        const updateFields = {
-            name: name || product.name,
-            price: price || product.price,
-            image: image || product.image,
-            description: description || product.description,
-            quantity: quantity || product.quantity,
-            sold: sold || product.sold,
-        };
+        const updatedProduct = await Product.findByIdAndUpdate(
+            productId,
+            {
+                name,
+                price,
+                image,
+                description,
+                category: categoryId || product.category,
+                quantity,
+                sold,
+                saleOf,
+                salePrice
+            },
+            { new: true }
+        );
 
-        if (categoryDoc) {
-            updateFields.category = categoryDoc._id;
-        }
-        const updatedProduct = await Product.findByIdAndUpdate(id, updateFields, { new: true });
-
-        if (!updatedProduct) {
-            return res.status(404).json({ message: 'Failed to update product.' });
-        }
-
-        res.status(200).json({ message: 'Product updated successfully', product: updatedProduct });
-
-    } catch (error) {
-        res.status(500).json({ message: error.message + ' update Product Error' });
+        res.status(200).json({ message: 'Product updated successfully!', product: updatedProduct });
+    } catch (err) {
+        res.status(500).json({ message: err.message + ' update Product Error' });
     }
-}
-
+};
 
 
 //[Delete] api/products/managerDelete/:id
@@ -288,5 +298,58 @@ module.exports.getProductByCategory = async (req, res) => {
         })
     } catch (error) {
         res.status(500).json(error)
+    }
+}
+
+// [GET] api/products/getProductBySubCategory/subcategory
+module.exports.listProductsBySubCategory = async (req, res) => {
+    try {
+        const { subcategoryName } = req.params;
+        const subcategory = await SubCategory.findOne({ name: subcategoryName }).populate('category');
+        if (!subcategory) {
+            return res.status(404).json({ message: 'SubCategory not found!' });
+        }
+        const products = await Product.find({ category: subcategory.category._id }).lean();
+
+        res.status(200).json({
+            message: `Products under SubCategory: ${subcategoryName}`,
+            products
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message + ' list Products Error' });
+    }
+};
+
+//[GET] api/products/search?category=?&subCategory=?
+module.exports.searchProductByCategoryAndSubCategory = async (req, res) => {
+    try {
+        const { categoryName, subcategoryName } = req.query; 
+        const filters = {}; 
+
+        if (!categoryName) {
+            return res.status(400).json({ message: 'Category name is required!' });
+        }
+        const category = await Category.findOne({ name: categoryName });
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found!' });
+        }
+        filters.category = category._id;
+
+        if (subcategoryName) {
+            const subcategory = await SubCategory.findOne({ name: subcategoryName, category: category._id });
+            if (!subcategory) {
+                return res.status(404).json({ message: 'SubCategory not found or does not belong to the specified category!' });
+            }
+            filters.subcategory = subcategory._id;
+        }
+
+        const products = await Product.find(filters).lean();
+
+        res.status(200).json({
+            message: 'Filtered products fetched successfully!',
+            products
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message + ' filter Products Error' });
     }
 }

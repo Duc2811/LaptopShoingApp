@@ -1,9 +1,9 @@
-import React, { FormEvent, useState } from "react";
+import React, { useState } from "react";
 import { otp as OtpForgot } from "../../services/client/ApiServices";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
-import { StyleSheet, View, Text, TextInput, Button, Alert } from "react-native";
-import SubmitButton from '../../components/forms/submitButton'
+import { StyleSheet, View, Text } from "react-native";
+import SubmitButton from '../../components/forms/submitButton';
 import OTPInput from '@/src/components/forms/OtpInput';
 
 type RootStackParamList = {
@@ -24,28 +24,25 @@ interface Props {
 }
 
 const ForgotOTP: React.FC<Props> = ({ navigation, route }) => {
-    const { email } = route.params;
-    const [otp, setOtp] = useState<string>("");
+    const { email: userEmail } = route.params;
+    const [otpCode, setOtpCode] = useState<string>("");
 
-    const handleCodeFilled = (code: string) => {
-        setOtp(code);
-    }
+    const handleOtpCodeFilled = (code: string) => {
+        setOtpCode(code);
+    };
 
-    const handelSendOtp = async () => {
-        if (!otp) {
-            return alert("Please enter the OTP");
-        }
-
+    const handleVerifyOtp = async () => {
         try {
-            const res = await OtpForgot(otp, email);
-            console.log(res.message);
-            // if (res.code === 400 || res.code === 401) {
-            //     alert("Error", res.message);
-            //     console.log(res.message);
-            // }
+            if (!otpCode) {
+                return alert("Please enter the OTP");
+            }
+            const response = await OtpForgot(otpCode, userEmail);
+            if (response.code === 400 || response.code === 401) {
+                alert(response.message);
+                return;
+            }
 
-            // navigation.navigate("ResetPassword", { token: res.token });
-            // console.log(res.message);
+            navigation.navigate("ResetPassword", { token: response.token });
         } catch (error) {
             console.error("Error verifying OTP:", error);
             alert("Failed to verify OTP");
@@ -56,16 +53,16 @@ const ForgotOTP: React.FC<Props> = ({ navigation, route }) => {
         <View style={styles.container}>
             <Text style={styles.header}>Forgot Password OTP</Text>
             <Text style={styles.content}>
-                Enter the OTP sent to your email address <Text style={styles.email}>{email}</Text>. Use it to reset your
+                Enter the OTP sent to your email address <Text style={styles.email}>{userEmail}</Text>. Use it to reset your
                 password.
             </Text>
             <View>
-                <OTPInput onCodeFilled={handleCodeFilled} />
+                <OTPInput onCodeFilled={handleOtpCodeFilled} />
             </View>
-            <View style={styles.buttonZ}>
+            <View style={styles.buttonContainer}>
                 <SubmitButton
                     btnTitle="Verify"
-                    handleSubmit={handelSendOtp}
+                    handleSubmit={handleVerifyOtp}
                 />
             </View>
         </View>
@@ -91,14 +88,13 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "#000",
     },
-    buttonZ: {
+    buttonContainer: {
         marginTop: 20,
         marginBottom: 10,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
     }
-
 });
 
 export default ForgotOTP;

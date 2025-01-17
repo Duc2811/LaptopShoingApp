@@ -351,7 +351,8 @@ module.exports.forgot = async (req, res) => {
         sendEmail.sendEmail(email, subject, html)
         res.status(200).json({
             code: 200,
-            message: "Send OTP Successfully"
+            message: "Send OTP Successfully",
+            Otp: otp    
         })
     } catch (error) {
         res.status(500).json(error)
@@ -364,6 +365,15 @@ module.exports.forgot = async (req, res) => {
 module.exports.otp = async (req, res) => {
     try {
         const { otp, email } = req.body;
+
+
+        const user = await Users.findOne({
+            email: email
+        })
+        if (!user) {
+            return res.status(401).json({ message: "Email Not Correct" })
+        }
+
         const otpExits = await VerifyEmail.findOne({
             email: email,
             otp: otp
@@ -371,12 +381,7 @@ module.exports.otp = async (req, res) => {
         if (!otpExits) {
             return res.status(400).json({ message: "OTP Not Correct" })
         }
-        const user = await Users.findOne({
-            email: email
-        })
-        if (!user) {
-            return res.status(401).json({ message: "Email Not Correct" })
-        }
+
         res.status(200).json({
             code: 200,
             token: user.token,
@@ -396,6 +401,7 @@ module.exports.reset = async (req, res) => {
 
     if (password !== confirmPassword) {
         return res.status(400).json({
+            code: 400,
             message: "Password Not Match"
         })
     }
@@ -403,6 +409,7 @@ module.exports.reset = async (req, res) => {
         const user = await Users.findOne({ token: token });
         if (!user) {
             res.status(401).json({
+                code: 401,
                 message: "User Not Found"
             })
         }
@@ -410,6 +417,7 @@ module.exports.reset = async (req, res) => {
         console.log(newPassword)
         await Users.updateOne({ token: token }, { password: newPassword })
         res.status(200).json({
+            code: 200,
             message: "Reset Password Successfully"
         })
     }

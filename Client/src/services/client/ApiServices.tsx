@@ -42,5 +42,6 @@ export const otp = async (otp: string, email: string) => {
 }
 
 export const resetPassword = async (password: string, confirmPassword: string, token: string) => {
-    return await axios.post('user/resetPassword', { password, confirmPassword, token }, { withCredentials: true })
+    const res = await axios.post('user/resetPassword', { password, confirmPassword, token }, { withCredentials: true })
+    return res.data
 }

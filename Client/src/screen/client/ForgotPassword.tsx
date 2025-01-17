@@ -30,31 +30,26 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ navigation }) => {
         try {
             const response = await forgotPassword(email);
 
-            if (response.data.code === 401 || response.data.code === 500) {
-                alert(response.data.message);
-                console.log(response.data.message);
-                return;
-            }
-            else if (response.data.code === 200) {
-                navigation.navigate("ForgotOTP", { email })
-                alert(response.data.message);
-                console.log(response.data.message);
+            if (response.data.code === 200) {
+                alert("Email sent successfully.");
+                navigation.navigate("ForgotOTP", { email });
+            } else {
+                alert(response.data.message || "An error occurred.");
             }
         } catch (error) {
-            console.error("Error sending forgot password email:", error);
+            alert("An error occurred. Please try again.");
         }
     };
 
-
     return (
-        <View className="flex-1 bg-gray-100 p-6 justify-center">
-            <View className="mb-8">
-                <Text className="text-2xl font-bold text-center text-gray-800">Forgot Password</Text>
-                <Text className="text-sm text-center text-gray-500 mt-2">
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.title}>Forgot Password</Text>
+                <Text style={styles.subtitle}>
                     Enter your email to receive a password reset link.
                 </Text>
             </View>
-            <View className="space-y-6">
+            <View style={styles.form}>
                 <InputBox
                     inputTitle="Email"
                     value={email}
@@ -63,23 +58,57 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ navigation }) => {
                     placeholderTextColor="gray"
                     keyboardType="email-address"
                     autoComplete="email"
-                    style={{
-                        backgroundColor: "white",
-                        borderColor: "#D1D5DB",
-                        borderWidth: 1,
-                        borderRadius: 8,
-                        padding: 16,
-                    }}
+                    style={styles.input}
                 />
+
                 <SubmitButton
                     handleSubmit={handleForgotPassword}
                     btnTitle="Submit"
                     loading={false}
-                    className="bg-blue-600 py-4 rounded-md"
+
                 />
             </View>
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "#F3F4F6",
+        padding: 24,
+        justifyContent: "center",
+    },
+    header: {
+        marginBottom: 32,
+        alignItems: "center",
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: "#1F2937",
+    },
+    subtitle: {
+        fontSize: 14,
+        color: "#6B7280",
+        marginTop: 8,
+        textAlign: "center",
+    },
+    form: {
+        marginBottom: 24,
+    },
+    input: {
+        backgroundColor: "white",
+        borderColor: "#D1D5DB",
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 16,
+    },
+    submitButton: {
+        backgroundColor: "#2563EB",
+        paddingVertical: 16,
+        borderRadius: 8,
+    },
+});
 
 export default ForgotPassword;

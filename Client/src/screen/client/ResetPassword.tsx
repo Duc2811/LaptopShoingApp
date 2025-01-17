@@ -29,22 +29,27 @@ const ResetPassword: React.FC<Props> = ({ navigation, route }) => {
     const [confirmPassword, setConfirmPassword] = useState<string>('');
 
     const handleReset = async () => {
+
+        console.log(token);
+
         if (password !== confirmPassword) {
             return alert("Passwords do not match");
         }
         try {
             const response = await resetPassword(password, confirmPassword, token);
-            if (response.data.code === 200) {
+            console.log(response)
+            if (response.code === 400 || response.code === 401) {
+                alert(response.message);
+            } else {
                 alert('Password reset successfully')
                 navigation.navigate('Login')
             }
-            else if (response.data.code === 400) {
-                alert(response.data.message)
-            }
+
         } catch (error) {
             alert('An error occurred. Please try again.')
         }
     }
+
 
     return (
         <View>

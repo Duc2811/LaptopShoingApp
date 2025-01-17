@@ -1,8 +1,16 @@
 import axios from "axios";
 import { store } from "../store/store";
+import { Platform } from "react-native";
+
+
+const apiBackend = Platform.OS === "android"
+    ? process.env.EXPO_PUBLIC_ANDROID_API_URL
+    : process.env.EXPO_PUBLIC_IOS_API_URL
+
+const ApiServices = "http://localhost:3000/api/"
 
 const instance = axios.create({
-    baseURL: 'http://localhost:3000/api/',
+    baseURL: ApiServices,
     // headers: {
     //     "Content-Type": 'application/json',
     // }
