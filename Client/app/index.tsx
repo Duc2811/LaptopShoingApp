@@ -1,15 +1,15 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
-import { Provider } from 'react-redux';  // Import Provider from react-redux
-import { PersistGate } from 'redux-persist/integration/react';  // Import PersistGate from redux-persist
-import StackNavigator from '../src/navigations/StackNavigator'; // Import your navigator
+import { Provider } from 'react-redux';  
+import { PersistGate } from 'redux-persist/integration/react';  
+import StackNavigator from '../src/navigations/StackNavigator'; 
 import { store, persistor } from '../src/store/store';
 
 export default function App() {
   return (
-    <Provider store={store}>  {/* Wrap your app with Provider and pass the store */}
-      <PersistGate loading={null} persistor={persistor}>  {/* Wrap with PersistGate */}
+    <Provider store={store}>  
+      <PersistGate loading={null} persistor={persistor}>  
         <StackNavigator />
         <StatusBar style="auto" />
       </PersistGate>

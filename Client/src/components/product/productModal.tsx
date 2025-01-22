@@ -13,4 +13,5 @@ export default interface ProductModel {
     deleted?: boolean; 
     createdAt?: string; 
     updatedAt?: string; 
+    isFavorite?: boolean;
 }

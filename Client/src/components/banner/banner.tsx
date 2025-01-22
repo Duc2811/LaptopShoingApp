@@ -5,7 +5,7 @@ import { BannerData } from '../../utils/BannerData';
 
 const width = Dimensions.get('window').width;
 
-const Banner: React.FC = () => {
+const   Banner: React.FC = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const renderItem = (data: any) => {

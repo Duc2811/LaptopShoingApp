@@ -38,7 +38,7 @@ const StackNavigator: React.FC = () => {
       <Stack.Screen
         name="Home"
         component={Home}
-        options={{ headerShown: true }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Verify"
