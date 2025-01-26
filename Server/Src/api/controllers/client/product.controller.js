@@ -4,12 +4,15 @@ const User = require('../../models/user')
 const Category = require('../../models/category')
 const SubCategory = require('../../models/subCategory')
 
+
 //[Post] api/products/addProducts
 module.exports.addProduct = async (req, res) => {
     try {
-        const { name, price, image, description, category, subcategory, quantity, sold, saleOf, salePrice } = req.body;
+        const { subcategoryId } = req.params;
+        const { name, price, image, description, quantity, sold, saleOf, salePrice } = req.body;
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
+
 
         if (!token) {
             return res.status(401).json({ message: 'Token is missing or invalid!' });
@@ -20,29 +23,25 @@ module.exports.addProduct = async (req, res) => {
             return res.status(401).json({ message: 'User not authorized to add product or User not found!!!' });
         }
 
-        const categoryDoc = await Category.findOne({ name: category });
-        if (!categoryDoc) {
-            return res.status(400).json({ message: 'Category not found!' });
+        const subcategoryDoc = await SubCategory.findOne({ _id: subcategoryId });
+        if (!subcategoryDoc) {
+            return res.status(400).json({
+                message: 'SubCategory not found!'
+            });
         }
 
-        if (subcategory) {
-            const subcategoryDoc = await SubCategory.findOne({
-                name: subcategory,
-                category: categoryDoc._id
-            });
-            if (!subcategoryDoc) {
-                return res.status(400).json({
-                    message: 'SubCategory not found or does not belong to the provided Category!'
-                });
-            }
+        const existingProduct = await Product.findOne({ name });
+        if (existingProduct) {
+            return res.status(400).json({ message: 'Product with this name already exists!' });
         }
+
         const product = new Product({
             productManager: productManager._id,
             name,
             price,
             image,
             description,
-            category: categoryDoc._id,
+            subCategory: subcategoryDoc._id,
             quantity,
             sold,
             saleOf,
@@ -53,7 +52,8 @@ module.exports.addProduct = async (req, res) => {
 
         res.status(201).json({ message: 'Product created successfully', product });
     } catch (err) {
-        res.status(500).json({ message: err.message + ' add Product Error' });
+        console.error(err);
+        res.status(500).json({ message: 'Error creating product: ' + err.message });
     }
 };
 
@@ -62,50 +62,45 @@ module.exports.addProduct = async (req, res) => {
 module.exports.updateProduct = async (req, res) => {
     try {
         const { productId } = req.params;
-        const { name, price, image, description, category, subcategory, quantity, sold, saleOf, salePrice } = req.body;
+        const { name, price, image, description, subCategory, quantity, sold, saleOf, salePrice } = req.body;
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+
+        if (!token) {
+            return res.status(401).json({ message: 'Token is missing or invalid!' });
+        }
+
+        const productManager = await User.findOne({ token });
+        if (!productManager || productManager.role !== 'productManager') {
+            return res.status(401).json({ message: 'User not authorized to update product or User not found!' });
+        }
 
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ message: 'Product not found!' });
         }
-        let categoryId;
-        if (category) {
-            const categoryDoc = await Category.findOne({ name: category });
-            if (!categoryDoc) {
-                return res.status(400).json({ message: 'Category not found!' });
-            }
-            categoryId = categoryDoc._id;
-        }
-        if (subcategory) {
-            const subcategoryDoc = await SubCategory.findOne({
-                name: subcategory,
-                category: categoryId || product.category
-            });
-            if (!subcategoryDoc) {
-                return res.status(400).json({
-                    message: 'SubCategory not found or does not belong to the provided Category!'
-                });
-            }
-        }
-        const updatedProduct = await Product.findByIdAndUpdate(
-            productId,
-            {
-                name,
-                price,
-                image,
-                description,
-                category: categoryId || product.category,
-                quantity,
-                sold,
-                saleOf,
-                salePrice
-            },
-            { new: true }
-        );
 
-        res.status(200).json({ message: 'Product updated successfully!', product: updatedProduct });
+        const subCategoryDoc = await SubCategory.findById(subCategory);
+        if (!subCategoryDoc) {
+            return res.status(400).json({ message: 'SubCategory not found!' });
+        }
+
+        product.name = name || product.name;
+        product.price = price || product.price;
+        product.image = image || product.image;
+        product.description = description || product.description;
+        product.subCategory = subCategory || product.subCategory;
+        product.quantity = quantity || product.quantity;
+        product.sold = sold || product.sold;
+        product.saleOf = saleOf || product.saleOf;
+        product.salePrice = salePrice || product.salePrice;
+
+        await product.save();
+
+        return res.status(200).json({ message: 'Product updated successfully', product });
     } catch (err) {
-        res.status(500).json({ message: err.message + ' update Product Error' });
+        console.error(err);
+        return res.status(500).json({ message: 'Error updating product: ' + err.message });
     }
 };
 
@@ -231,32 +226,35 @@ module.exports.getAllProducts = async (req, res) => {
     }
 }
 
+
 // [GET] api/products/:id
 module.exports.getProductById = async (req, res) => {
     try {
-
-        const totalProducts = await Product.countDocuments({ deleted: false })
-        if (totalProducts === 0) {
-            return res.status(404).json({ message: 'No products found.' })
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ message: 'Please provide a product id.' });
         }
-        const paginationData = await PaginationHelper({
-            currentPage: 1,
-            limit: 12,
-        },
-            totalProducts,
-            req.query
-        );
-        const product = await Product.findById(req.params).skip(paginationData.skip).limit(paginationData.limit).sort({ createdAt: -1 });
 
+        const product = await Product.findByIdAndUpdate(
+            id,
+            { $inc: { numReviews: 1 } },
+            { new: true }
+        );
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found.' });
+        }
         res.status(200).json({
             product,
-            totalPage: paginationData.totalPage
-        })
+            message: 'Product found',
+        });
     } catch (error) {
-        res.status(500).json(error)
+        res.status(500).json({
+            error: error.message || 'An error occurred while fetching the product.',
+        });
     }
+};
 
-}
 
 // [GET] api/products/getProductByCategory/category
 module.exports.getProductByCategory = async (req, res) => {
@@ -301,55 +299,59 @@ module.exports.getProductByCategory = async (req, res) => {
     }
 }
 
-// [GET] api/products/getProductBySubCategory/subcategory
-module.exports.listProductsBySubCategory = async (req, res) => {
+
+//[GET] api/product/getProductBySubCategory/subcategory
+module.exports.getProductBySubCategory = async (req, res) => {
     try {
-        const { subcategoryName } = req.params;
-        const subcategory = await SubCategory.findOne({ name: subcategoryName }).populate('category');
-        if (!subcategory) {
-            return res.status(404).json({ message: 'SubCategory not found!' });
+        const { subcategoryId } = req.params;
+        const subcategoryDoc = await SubCategory.findOne({ _id: subcategoryId });
+
+        if (!subcategoryDoc) {
+            return res.status(400).json({ code: 400, message: 'Please provide a subcategory.' })
         }
-        const products = await Product.find({ category: subcategory.category._id }).lean();
+
+        const products = await Product.find({ subCategory: subcategoryDoc._id, deleted: false }).populate('subCategory', 'name');
+
+        if (products.length === 0) {
+            return res.status(404).json({ message: `No products found under SubCategory: ${subcategoryId}` });
+        }
 
         res.status(200).json({
-            message: `Products under SubCategory: ${subcategoryName}`,
-            products
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message + ' list Products Error' });
+            products,
+            message: `Products under SubCategory: ${subcategoryId}`
+        })
+    } catch (error) {
+        res.status(500).json(error)
     }
-};
+}
 
-//[GET] api/products/search?category=?&subCategory=?
-module.exports.searchProductByCategoryAndSubCategory = async (req, res) => {
+//[GET] api/product/getTop8
+module.exports.getTop8 = async (req, res) => {
     try {
-        const { categoryName, subcategoryName } = req.query; 
-        const filters = {}; 
+        const products = await Product.find({ deleted: false }).sort({ rating: -1 }).limit(8);
+        res.status(200).json({ products });
+    } catch (error) {
+        res.status(500).json(error);
+    }
+}
 
-        if (!categoryName) {
-            return res.status(400).json({ message: 'Category name is required!' });
-        }
-        const category = await Category.findOne({ name: categoryName });
-        if (!category) {
-            return res.status(404).json({ message: 'Category not found!' });
-        }
-        filters.category = category._id;
+//[GET] api/getTopView
+module.exports.getTopView = async (req, res) => {
+    try {
+        const products = await Product.find({ deleted: false }).sort({ numReviews: -1 }).limit(8);
+        res.status(200).json({ products });
+    } catch (error) {
+        res.status(500).json(error);
+    }
+}
 
-        if (subcategoryName) {
-            const subcategory = await SubCategory.findOne({ name: subcategoryName, category: category._id });
-            if (!subcategory) {
-                return res.status(404).json({ message: 'SubCategory not found or does not belong to the specified category!' });
-            }
-            filters.subcategory = subcategory._id;
-        }
 
-        const products = await Product.find(filters).lean();
-
-        res.status(200).json({
-            message: 'Filtered products fetched successfully!',
-            products
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message + ' filter Products Error' });
+//[GET] api/products/getTopSold
+module.exports.getTopSold = async (req, res) => {
+    try {
+        const products = await Product.find({ deleted: false }).sort({ numSold: -1 }).limit(8);
+        res.status(200).json({ products });
+    } catch (error) {
+        res.status(500).json(error);
     }
 }

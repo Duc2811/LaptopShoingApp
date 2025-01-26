@@ -1,7 +1,9 @@
 const Category = require('../../models/category')
 const PaginationHelper = require('../../../helper/pagination')
 const User = require('../../models/user')
-const subCategories = require('../../models/subCategory')
+const subCategories = require('../../models/subCategory');
+const subCategory = require('../../models/subCategory');
+const { model } = require('mongoose');
 
 
 //[GET] api/category/getAllCategory
@@ -22,22 +24,39 @@ module.exports.getAllCategory = async (req, res) => {
             req.query
         );
 
+        // Truy vấn các Category
         const categories = await Category.find({ deleted: false })
-            .populate({
-                path: 'subCategories',
-                model: 'SubCategory'
-            })
             .skip(paginationData.skip)
             .limit(paginationData.limit)
             .sort({ createdAt: 'desc' });
 
+        // Truy vấn các SubCategory liên quan đến mỗi Category
+        const categoryWithSubCategories = await Promise.all(
+            categories.map(async (category) => {
+                // Lấy tất cả SubCategory có `category` là `_id` của category hiện tại
+                const subCategories = await subCategory.find({ category: category._id });
+
+                // Trả về category cùng với subCategories
+                return {
+                    ...category.toObject(),
+                    subCategories: subCategories.map(subCategory => ({
+                        id: subCategory._id,
+                        name: subCategory.name,
+                        description: subCategory.description,
+                        image: subCategory.image,
+                        status: subCategory.status,
+                    })),
+                };
+            })
+        );
+
         return res.status(200).json({
-            categories,
+            categories: categoryWithSubCategories,
             totalPage: paginationData.totalPage,
         });
     } catch (error) {
         console.error('Error fetching categories:', error);
-        return res.status(500).json({ message: 'Server error.', error });
+        return res.status(500).json({ message: 'Server error.', error: error.message });
     }
 };
 
@@ -56,8 +75,11 @@ module.exports.getCategory = async (req, res) => {
 module.exports.getSubCategoryById = async (req, res) => {
     try {
         const { id } = req.params;
-        const subCategory = await subCategories.findById(id);
-        res.status(200).json({ subCategory });
+        const subCategories = await subCategory.find({ category: id, status: 'active' });
+        if (!subCategories || subCategories.length === 0) {
+            return res.status(404).json({ message: 'No subcategories found for the given category ID.' });
+        }
+        res.status(200).json({ subCategories });
     } catch (error) {
         res.status(500).json({ error: error.message + ': get category error' });
     }
@@ -92,68 +114,6 @@ module.exports.addCategory = async (req, res) => {
     }
 }
 
-
-module.exports.addSubCategory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        if (!id) return res.status(400).json({ message: 'Category not found' })
-
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
-
-        if (!token) {
-            return res.status(401).json({ message: 'Token is missing or invalid!' });
-        }
-
-        const productManager = await User.findOne({ token: token });
-
-        if (!productManager || productManager.role !== 'productManager') {
-            return res.status(401).json({ message: 'User not authorized to add subCategory or User not found!!!' });
-        }
-
-
-        const { name, description, image } = req.body;
-
-        const checkSubCategori = await subCategories.findOne({ name: name })
-        if (checkSubCategori) return res.status(400).json({ message: 'SubCategory already exists' })
-
-        const subCategory = new subCategories({ name, description, image, category: id });
-        await subCategory.save();
-        res.status(200).json({ message: 'SubCategory added successfully', subCategory });
-    } catch (error) {
-        res.status(500).json({ error: error.message + ': add subCategory error' });
-    }
-}
-
-
-//[PUT] api/category/updateSubCategory/:id
-module.exports.updateSubCategory = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
-
-        if (!token) {
-            return res.status(401).json({ message: 'Token is missing or invalid!' });
-        }
-
-        const productManager = await User.findOne({ token: token });
-
-        if (!productManager || productManager.role !== 'productManager') {
-            return res.status(401).json({ message: 'User not authorized to add subCategory or User not found!!!' });
-        }
-
-        const { name, description, image } = req.body;
-        const subCategory = await subCategories.findByIdAndUpdate(id, { name, description, image }, { new: true });
-        if (!subCategory) {
-            return res.status(404).json({ message: 'SubCategory not found.' });
-        }
-        res.status(200).json({ message: 'SubCategory updated successfully', subCategory });
-    } catch (error) {
-        res.status(500).json({ error: error.message + ': update subCategory error' });
-    }
-}
 
 
 //[PUT] api/category/updateCategory/:id
@@ -222,6 +182,87 @@ module.exports.managerDeleteCategory = async (req, res) => {
     }
 };
 
+//[DELETE] api/category/adminDeleteCategory/:id
+
+module.exports.adminDeleteCategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleteCategory = await Category.findByIdAndDelete(id);
+        if (!deleteCategory) {
+            return res.status(404).json({ message: 'Category not found.' });
+        }
+        res.status(200).json({ message: 'Category deleted successfully', category });
+    } catch (error) {
+        res.status(500).json({ error: error.message + ': delete category error' });
+    }
+}
+
+
+
+//[POST] api/category/addSubCategory
+module.exports.addSubCategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const category = await Category.findById(id);
+        if (!category) return res.status(400).json({ message: 'Category not found' })
+
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+
+        if (!token) {
+            return res.status(401).json({ message: 'Token is missing or invalid!' });
+        }
+
+        const productManager = await User.findOne({ token: token });
+
+        if (!productManager || productManager.role !== 'productManager') {
+            return res.status(401).json({ message: 'User not authorized to add subCategory or User not found!!!' });
+        }
+
+
+        const { name, description, image } = req.body;
+
+        const checkSubCategori = await subCategories.findOne({ name: name })
+        if (checkSubCategori) return res.status(400).json({ message: 'SubCategory already exists' })
+
+        const subCategory = new subCategories({ name, description, image, category: id });
+        await subCategory.save();
+        res.status(200).json({ message: 'SubCategory added successfully', subCategory });
+    } catch (error) {
+        res.status(500).json({ error: error.message + ': add subCategory error' });
+    }
+}
+
+
+//[PUT] api/category/updateSubCategory/:id
+module.exports.updateSubCategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+
+        if (!token) {
+            return res.status(401).json({ message: 'Token is missing or invalid!' });
+        }
+
+        const productManager = await User.findOne({ token: token });
+
+        if (!productManager || productManager.role !== 'productManager') {
+            return res.status(401).json({ message: 'User not authorized to add subCategory or User not found!!!' });
+        }
+
+        const { name, description, image } = req.body;
+        const subCategory = await subCategories.findByIdAndUpdate(id, { name, description, image }, { new: true });
+        if (!subCategory) {
+            return res.status(404).json({ message: 'SubCategory not found.' });
+        }
+        res.status(200).json({ message: 'SubCategory updated successfully', subCategory });
+    } catch (error) {
+        res.status(500).json({ error: error.message + ': update subCategory error' });
+    }
+}
+
 
 //[DELETE] api/category/managerDeleteSubCategory/:id
 module.exports.managerDeleteSubCategory = async (req, res) => {
@@ -239,11 +280,8 @@ module.exports.managerDeleteSubCategory = async (req, res) => {
             return res.status(403).json({ message: 'User not authorized to delete subCategory or User not found!' });
         }
 
-        const deletedSubCategory = await subCategories.findOneAndUpdate(
-            { _id: id, deleted: false },
-            { deleted: true },
-            { new: true }
-        );
+        const deletedSubCategory = await subCategories.findByIdAndDelete({ _id: id, required: false });
+
 
         if (!deletedSubCategory) {
             console.error('SubCategory deletion failed:', deletedSubCategory);
@@ -263,19 +301,3 @@ module.exports.managerDeleteSubCategory = async (req, res) => {
     }
 };
 
-
-
-//[DELETE] api/category/adminDeleteCategory/:id
-
-module.exports.adminDeleteCategory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const deleteCategory = await Category.findByIdAndDelete(id);
-        if (!deleteCategory) {
-            return res.status(404).json({ message: 'Category not found.' });
-        }
-        res.status(200).json({ message: 'Category deleted successfully', category });
-    } catch (error) {
-        res.status(500).json({ error: error.message + ': delete category error' });
-    }
-}

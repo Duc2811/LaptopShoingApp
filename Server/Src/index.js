@@ -1,7 +1,10 @@
 const express = require('express')
 const app = express()
 const routeClient = require('./api/routes/client/index')
-// const routeAdmin = require('./api/routes/admin/index')
+
+const routeAdmin = require('./api/routes/admin/adminIndex')
+
+
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
@@ -27,7 +30,7 @@ app.use(cors({
 }));
 
 routeClient(app)
-// routeAdmin(app)
+routeAdmin(app)
 
 // Error handling middleware (optional but recommended)
 app.use((err, req, res, next) => {

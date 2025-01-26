@@ -352,6 +352,7 @@ module.exports.forgot = async (req, res) => {
         res.status(200).json({
             code: 200,
             message: "Send OTP Successfully",
+            otp: otp
         })
     } catch (error) {
         res.status(500).json(error)

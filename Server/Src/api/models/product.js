@@ -22,9 +22,9 @@ const productSchema = new mongoose.Schema({
         required: true,
         type: String
     },
-    category: {
+    subCategory: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category',
+        ref: 'SubCategory',
         required: true
     },
     quantity: {
