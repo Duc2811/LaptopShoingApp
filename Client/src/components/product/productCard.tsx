@@ -1,49 +1,25 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { fonts } from "../../utils/fonts";
 import Product from "./productModal";
-
-
-
-
-const data = []
-
 
 type ProductCardProps = {
   item: Product;
   handleProductClick: (item: Product) => void;
-  toggleFavorite: (item: Product) => void;
 };
 
-const ProductCard: React.FC<ProductCardProps> = ({
-  item,
-  handleProductClick,
-  toggleFavorite,
-}) => {
+const ProductCard: React.FC<ProductCardProps> = ({ item, handleProductClick }) => {
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={() => handleProductClick(item)}
     >
-      <Image source={{ uri: item.image }} style={styles.coverImage} />
-      <View style={styles.contentContainer}>
-        <Text style={styles.title}>{item.description}</Text>
-        <Text style={styles.price}>${item.price.toFixed(2)}</Text>
-      </View>
-      <View style={styles.likeContainer}>
-        <TouchableOpacity onPress={() => toggleFavorite(item)}>
-          {item.isFavorite ? (
-            <Image
-              
-              style={styles.favorite}
-            />
-          ) : (
-            <Image
-              
-              style={styles.favorite}
-            />
-          )}
-        </TouchableOpacity>
+      <Image source={{ uri: item.image }} style={styles.productImage} />
+      <View style={styles.detailsContainer}>
+        <Text numberOfLines={2} style={styles.productName}>
+          {item.description}
+        </Text>
+        <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
+        <Text style={styles.soldText}>{item.sold || 0} sold</Text>
       </View>
     </TouchableOpacity>
   );
@@ -53,39 +29,35 @@ export default ProductCard;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    marginHorizontal: 10,
-    marginVertical: 10,
-  },
-  coverImage: {
-    height: 256,
-    width: "100%",
-    borderRadius: 20,
-    position: "relative",
-  },
-  contentContainer: {
-    padding: 10,
-  },
-  title: {
-    fontSize: 18,
-    fontFamily: fonts.regular,
-    fontWeight: "700",
-    color: "#444444",
-  },
-  price: {
-    fontSize: 18,
-    fontFamily: fonts.medium,
-  },
-  likeContainer: {
-    position: "absolute",
-    padding: 5,
+    width: "48%",
+    marginVertical: 8,
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    right: 10,
-    top: 10,
+    borderRadius: 8,
+    overflow: "hidden",
+    elevation: 2,
   },
-  favorite: {
-    height: 20,
-    width: 20,
+  productImage: {
+    width: "100%",
+    height: 150,
+    resizeMode: "cover",
+  },
+  detailsContainer: {
+    padding: 8,
+  },
+  productName: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+    marginBottom: 4,
+  },
+  productPrice: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#FF5722",
+    marginBottom: 4,
+  },
+  soldText: {
+    fontSize: 12,
+    color: "#999",
   },
 });

@@ -8,7 +8,7 @@ import Verify from '../screen/client/VerifyScreen';
 import ForgotPassword from '../screen/client/ForgotPassword';
 import ForgotOTP from '../screen/client/ForgotOTP';
 import ResetPassword from '../screen/client/ResetPassword';
-
+import productManagerScreen from '../screen/productManager/productManagerScreen';
 
 export type RootStackParamList = {
   Register: undefined;
@@ -18,6 +18,7 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   ForgotOTP: { email: string };
   ResetPassword: { token: string };
+  ProductManagerScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -60,6 +61,13 @@ const StackNavigator: React.FC = () => {
         component={ResetPassword}
         options={{ headerShown: true }}
       />
+
+      <Stack.Screen
+        name="ProductManagerScreen"
+        component={productManagerScreen}
+        options={{ headerShown: true }}
+      />
+
     </Stack.Navigator>
   );
 };

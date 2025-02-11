@@ -172,6 +172,7 @@ module.exports.login = async (req, res) => {
                     code: 200,
                     token: user.token,
                     id: user.id,
+                    userRole: user.role,
                     message: "Login Successful."
                 })
             }

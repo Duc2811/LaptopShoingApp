@@ -5,236 +5,149 @@ import Banner from "../../components/banner/banner";
 import ProductCard from "@/src/components/product/productCard";
 import Tags from "@/src/components/product/tag";
 import ProductModel from "@/src/components/product/productModal";
+import CategoryModel from "@/src/components/category/categoryModal";
+import SubCategoryModel from "@/src/components/category/subCategoryModal";
 import Header from "@/src/components/menus/header";
 
 
-const exampleProductData: ProductModel[] = [
-  {
-    _id: "1",
-    productManager: "Alice Johnson",
-    name: "Laptop XYZ Pro",
-    price: 999.99,
-    image: "https://example.com/laptop-image.jpg",
-    description: "High-performance laptop with 16GB RAM, 512GB SSD, and Intel i7 processor.",
-    category: "Electronics",
-    quantity: 50,
-    sold: 100,
-    rating: 4.5,
-    numReviews: 200,
-    deleted: false,
-    createdAt: "2024-01-01T00:00:00Z",
-    updatedAt: "2025-01-01T00:00:00Z",
-    isFavorite: false,
-  },
-  {
-    _id: "2",
-    productManager: "Bob Smith",
-    name: "Wireless Headphones",
-    price: 199.99,
-    image: "https://example.com/headphones-image.jpg",
-    description: "Noise-canceling wireless headphones with 20 hours of battery life.",
-    category: "Accessories",
-    quantity: 150,
-    sold: 1200,
-    rating: 4.7,
-    numReviews: 500,
-    deleted: false,
-    createdAt: "2023-12-15T00:00:00Z",
-    updatedAt: "2025-01-05T00:00:00Z",
-    isFavorite: true,
-  },
-  {
-    _id: "3",
-    productManager: "Charlie Davis",
-    name: "Gaming Mouse",
-    price: 49.99,
-    image: "https://example.com/gaming-mouse.jpg",
-    description: "Ergonomic gaming mouse with customizable RGB lighting and 16000 DPI.",
-    category: "Gaming",
-    quantity: 80,
-    sold: 250,
-    rating: 4.2,
-    numReviews: 300,
-    deleted: false,
-    createdAt: "2024-01-10T00:00:00Z",
-    updatedAt: "2025-01-08T00:00:00Z",
-    isFavorite: false,
-  },
-  {
-    _id: "4",
-    productManager: "Diana Green",
-    name: "Smart Watch X1",
-    price: 299.99,
-    image: "https://example.com/smartwatch-image.jpg",
-    description: "Smartwatch with heart rate monitor, sleep tracking, and GPS.",
-    category: "Wearables",
-    quantity: 120,
-    sold: 450,
-    rating: 4.8,
-    numReviews: 800,
-    deleted: false,
-    createdAt: "2024-02-01T00:00:00Z",
-    updatedAt: "2025-01-10T00:00:00Z",
-    isFavorite: true,
-  },
-  {
-    _id: "5",
-    productManager: "Eve White",
-    name: "Bluetooth Speaker",
-    price: 79.99,
-    image: "https://example.com/speaker-image.jpg",
-    description: "Portable Bluetooth speaker with waterproof design and 12 hours of playtime.",
-    category: "Audio",
-    quantity: 200,
-    sold: 800,
-    rating: 4.3,
-    numReviews: 150,
-    deleted: false,
-    createdAt: "2024-01-25T00:00:00Z",
-    updatedAt: "2025-01-12T00:00:00Z",
-    isFavorite: true,
-  },
-  {
-    _id: "5",
-    productManager: "Eve White",
-    name: "Bluetooth Speaker",
-    price: 79.99,
-    image: "https://example.com/speaker-image.jpg",
-    description: "Portable Bluetooth speaker with waterproof design and 12 hours of playtime.",
-    category: "Audio",
-    quantity: 200,
-    sold: 800,
-    rating: 4.3,
-    numReviews: 150,
-    deleted: false,
-    createdAt: "2024-01-25T00:00:00Z",
-    updatedAt: "2025-01-12T00:00:00Z",
-    isFavorite: true,
-  },
-  {
-    _id: "5",
-    productManager: "Eve White",
-    name: "Bluetooth Speaker",
-    price: 79.99,
-    image: "https://example.com/speaker-image.jpg",
-    description: "Portable Bluetooth speaker with waterproof design and 12 hours of playtime.",
-    category: "Audio",
-    quantity: 200,
-    sold: 800,
-    rating: 4.3,
-    numReviews: 150,
-    deleted: false,
-    createdAt: "2024-01-25T00:00:00Z",
-    updatedAt: "2025-01-12T00:00:00Z",
-    isFavorite: true,
-  },
-  {
-    _id: "5",
-    productManager: "Eve White",
-    name: "Bluetooth Speaker",
-    price: 79.99,
-    image: "https://example.com/speaker-image.jpg",
-    description: "Portable Bluetooth speaker with waterproof design and 12 hours of playtime.",
-    category: "Audio",
-    quantity: 200,
-    sold: 800,
-    rating: 4.3,
-    numReviews: 150,
-    deleted: false,
-    createdAt: "2024-01-25T00:00:00Z",
-    updatedAt: "2025-01-12T00:00:00Z",
-    isFavorite: true,
-  },
-  {
-    _id: "5",
-    productManager: "Eve White",
-    name: "Bluetooth Speaker",
-    price: 79.99,
-    image: "https://example.com/speaker-image.jpg",
-    description: "Portable Bluetooth speaker with waterproof design and 12 hours of playtime.",
-    category: "Audio",
-    quantity: 200,
-    sold: 800,
-    rating: 4.3,
-    numReviews: 150,
-    deleted: false,
-    createdAt: "2024-01-25T00:00:00Z",
-    updatedAt: "2025-01-12T00:00:00Z",
-    isFavorite: true,
-  },
-];
+
+import { getAllProduct as AllProduct } from "@/src/services/client/ApiCategory_Product";
+import { getAllCategory as AllCategory } from "@/src/services/client/ApiCategory_Product";
+
+import CategoryCard from "@/src/components/category/categoryCard";
+
 
 const HomeScreen: React.FC = () => {
-  const [product, setProduct] = useState<ProductModel[] | null>(exampleProductData);
+  const [products, setProducts] = useState<ProductModel[]>([]);
+  const [categories, setCategories] = useState<CategoryModel[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategoryModel[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = useCallback(() => {
+  const fetchProducts = async (page: number) => {
+    try {
+      const response = await AllProduct(page);
+      return response?.products || [];
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      return [];
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await AllCategory();
+      return response?.categories || [];
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      return [];
+    }
+  };
+
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    setTimeout(() => {
+    try {
+      const productData = await fetchProducts(1);
+      const categoryData = await fetchCategories();
+      setProducts(productData);
+      setCategories(categoryData);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    } finally {
       setRefreshing(false);
-    }, 2000);
+    }
+  }, []);
+
+  useEffect(() => {
+    const initializeData = async () => {
+      try {
+        const productData = await fetchProducts(1);
+        const categoryData = await fetchCategories();
+        setProducts(productData);
+        setCategories(categoryData);
+      } catch (error) {
+        console.error("Error initializing data:", error);
+      }
+    };
+    initializeData();
   }, []);
 
   const handleProductDetails = (item: ProductModel) => {
     console.log("Navigate to product details for:", item);
   };
 
-  const toggleFavorite = (item: ProductModel) => {
-    setProduct((prevProducts) =>
-      prevProducts ? prevProducts.map((prod) =>
-        prod._id === item._id
-          ? {
-            ...prod,
-            isFavorite: !prod.isFavorite,
-          }
-          : prod
-      ) : [] 
-    );
+  const handleCategoryDetails = (item: CategoryModel | SubCategoryModel) => {
+    console.log("Navigate to category or subcategory details for:", item);
   };
+
+
 
   return (
     <ScrollView
       contentContainerStyle={styles.container}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <View >
+      <View>
         <Header isCart={true} />
       </View>
-
       <View>
         <Banner />
       </View>
 
       <View style={styles.container}>
-        <View>
-          <Text style={styles.headingText}>Match Your Style</Text>
-          <View style={styles.inputContainer}>
-            <Image style={styles.searchIcon} />
-            <TextInput placeholder="Search" style={styles.textInput} />
-          </View>
+        <Text style={styles.headingText}>Match Your Style</Text>
+        <View style={styles.inputContainer}>
+          <Image style={styles.searchIcon} />
+          <TextInput placeholder="Search" style={styles.textInput} />
         </View>
         <Tags />
 
+        <ScrollView
+          contentContainerStyle={styles.container}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          <Text style={styles.headingText}>Product Manager Screen</Text>
+          <View style={styles.listContainer}>
+            <Text style={styles.sectionTitle}>Categories</Text>
+            {categories.length > 0 ? (
+              <View style={styles.categoryList}>
+                {categories.map((item) => (
+                  <CategoryCard
+                    key={item._id}
+                    item={item}
+                    handleCategoryClick={handleCategoryDetails}
+                  />
+                ))}
+              </View>
+            ) : (
+              <Text>No categories found.</Text>
+            )}
+          </View>
+          <View style={styles.listContainer}>
+            <Text style={styles.sectionTitle}>Products</Text>
+            {products.length > 0 ? (
+              <View style={styles.productList}>
+                {products.map((item) => (
+                  <ProductCard
+                    key={item._id}
+                    item={item}
+                    handleProductClick={handleProductDetails}
+                  />
+                ))}
+              </View>
+            ) : (
+              <Text>No products found.</Text>
+            )}
+          </View>
+        </ScrollView>
 
-        <View style={styles.productList}>
-          {product?.map((item) => (
-            <ProductCard
-              key={item._id}
-              item={item}
-              handleProductClick={handleProductDetails}
-              toggleFavorite={toggleFavorite}
-            />
-          ))}
-        </View>
       </View>
-
-      <View style={{ backgroundColor: "#ffffff" }}>
-        <Footer />
-      </View>
-      
+      <Footer />
     </ScrollView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -284,6 +197,21 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
+  listContainer: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 10,
+    color: "#555",
+  },
+  categoryList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+ 
 });
 
 export default HomeScreen;

@@ -259,6 +259,7 @@ module.exports.getProductById = async (req, res) => {
 // [GET] api/products/getProductByCategory/category
 module.exports.getProductByCategory = async (req, res) => {
     try {
+
         const { category } = req.params;
         if (!category) {
             return res.status(400).json({ message: 'Please provide a category.' })
@@ -306,11 +307,27 @@ module.exports.getProductBySubCategory = async (req, res) => {
         const { subcategoryId } = req.params;
         const subcategoryDoc = await SubCategory.findOne({ _id: subcategoryId });
 
+        const totalProducts = await Product.countDocuments({ deleted: false })
+        if (totalProducts === 0) {
+            return res.status(404).json({ message: 'No products found.' })
+        }
+        const paginationData = await PaginationHelper({
+            currentPage: 1,
+            limit: 12,
+        },
+            totalProducts,
+            req.query
+        )
+
         if (!subcategoryDoc) {
             return res.status(400).json({ code: 400, message: 'Please provide a subcategory.' })
         }
 
-        const products = await Product.find({ subCategory: subcategoryDoc._id, deleted: false }).populate('subCategory', 'name');
+        const products = await Product.find({ subCategory: subcategoryDoc._id, deleted: false })
+            .populate('subCategory', 'name')
+            .skip(paginationData.skip)
+            .limit(paginationData.limit)
+            .sort({ createdAt: -1 });;
 
         if (products.length === 0) {
             return res.status(404).json({ message: `No products found under SubCategory: ${subcategoryId}` });
@@ -318,7 +335,8 @@ module.exports.getProductBySubCategory = async (req, res) => {
 
         res.status(200).json({
             products,
-            message: `Products under SubCategory: ${subcategoryId}`
+            message: `Products under SubCategory: ${subcategoryId}`,
+            totalPage: paginationData.totalPage
         })
     } catch (error) {
         res.status(500).json(error)

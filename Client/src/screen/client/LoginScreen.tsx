@@ -15,6 +15,7 @@ type RootStackParamList = {
   Register: undefined;
   Verify: undefined;
   ForgotPassword: undefined;
+  ProductManagerScreen: undefined;
 };
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Login">;
@@ -42,15 +43,31 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         alert(res.message);
         console.log(res.message);
       } else if (res.code === 200) {
-        alert(res.message);
-        dispatch(
-          doLogin({
-            _id: res.id,
-            token: res.token,
-            notification: res.notification,
-          })
-        );
-        navigation.replace("Home");
+
+        if (res.userRole === "user") {
+          alert(res.message);
+          dispatch(
+            doLogin({
+              _id: res.id,
+              token: res.token,
+              notification: res.notification,
+            })
+          );
+          navigation.replace("Home");
+        }
+        else if (res.userRole === "productManager") {
+          alert(res.message);
+          dispatch(
+            doLogin({
+              _id: res.id,
+              token: res.token,
+              notification: res.notification,
+            })
+          );
+          navigation.replace("ProductManagerScreen");
+        }
+        
+
       } else if (res.code === 606) {
         alert(res.message);
         navigation.replace("Verify");
