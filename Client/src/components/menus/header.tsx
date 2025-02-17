@@ -1,7 +1,8 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-
+import { useDispatch } from "react-redux";
+import { doLogout } from "@/src/store/reducer/userReducer";
 
 type RootStackParamList = {
   Home: undefined;
@@ -14,8 +15,13 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ isCart }) => {
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
+  const dispatch = useDispatch();
   const handleBack = () => {
+    navigation.navigate("Home");
+  };
+
+  const handleLogout = () => {
+    dispatch(doLogout());
     navigation.navigate("Home");
   };
 
@@ -47,6 +53,16 @@ const Header: React.FC<HeaderProps> = ({ isCart }) => {
         />
         <Text>Profile</Text>
       </View>
+
+
+      <TouchableOpacity onPress={handleLogout}>
+        <View>
+          <Image style={styles.profileImage} />
+          <Text>Logout</Text>
+        </View>
+      </TouchableOpacity>
+
+
     </View>
   );
 };

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from '../screen/client/LoginScreen';
@@ -9,6 +9,9 @@ import ForgotPassword from '../screen/client/ForgotPassword';
 import ForgotOTP from '../screen/client/ForgotOTP';
 import ResetPassword from '../screen/client/ResetPassword';
 import productManagerScreen from '../screen/productManager/productManagerScreen';
+import ListProductScreen from '../screen/product/ListProductScreen';
+import ProductDetail from '../screen/product/productDetail';
+import cartScreen from '../screen/Cart/cartScreen';
 
 export type RootStackParamList = {
   Register: undefined;
@@ -19,12 +22,18 @@ export type RootStackParamList = {
   ForgotOTP: { email: string };
   ResetPassword: { token: string };
   ProductManagerScreen: undefined;
+  ListProduct: { id: string };
+  ProductDetail: { id: string };
+  Cart: undefined
 };
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const StackNavigator: React.FC = () => {
   return (
+
+
     <Stack.Navigator initialRouteName="Login">
       <Stack.Screen
         name="Login"
@@ -68,10 +77,26 @@ const StackNavigator: React.FC = () => {
         options={{ headerShown: true }}
       />
 
+      <Stack.Screen
+        name="ListProduct"
+        component={ListProductScreen}
+        options={{ headerShown: true }}
+      />
+      <Stack.Screen
+        name="ProductDetail"
+        component={ProductDetail}
+        options={{ headerShown: true }}
+      />
+      <Stack.Screen
+        name="Cart"
+        component={cartScreen}
+        options={{ headerShown: true }}
+      />
     </Stack.Navigator>
+
   );
 };
 
 export default StackNavigator;
 
-const styles = StyleSheet.create({});
+

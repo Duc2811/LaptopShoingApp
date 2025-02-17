@@ -1,57 +1,64 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
 import { getAllProductBySubCategory as GetProductBySubCategory } from "@/src/services/client/ApiCategory_Product";
+import ProductCard from "@/src/components/product/productCard";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "@/src/navigations/RootStackParamList";
 
 interface ProductByCategoryProps {
     id: string;
 }
 
+type NavigationProp = StackNavigationProp<RootStackParamList, "Home">;
+
 const ProductByCategory: React.FC<ProductByCategoryProps> = ({ id }) => {
     const [products, setProducts] = useState<any[]>([]);
     const [page, setPage] = useState<number>(1);
+    const [loading, setLoading] = useState<boolean>(true);
+    const navigation = useNavigation<NavigationProp>();
 
     useEffect(() => {
         const fetchProducts = async () => {
-            if (!id) return; 
+            if (!id) return;
             try {
+                setLoading(true);
                 const response = await GetProductBySubCategory(id, page);
-                console.log("API Response:", response);
                 if (response && response.products) {
-                    setProducts(response.products); 
+                    setProducts(response.products);
                 } else {
                     console.error("Products not found in API response");
                 }
             } catch (error) {
                 console.error("Error fetching products:", error);
+            } finally {
+                setLoading(false);
             }
         };
-    
+
         fetchProducts();
     }, [id, page]);
-    
+
+    const handleProductDetails = (item: any) => {
+        navigation.navigate("ProductDetail", { id: item._id });
+    };
+
+    const renderItem = ({ item }: { item: any }) => (
+        <ProductCard item={item} handleProductClick={handleProductDetails} />
+    );
 
     return (
         <View style={styles.container}>
-            <Text style={styles.header}>Products for SubCategory</Text>
-            {products.length > 0 ? (
+            <Text style={styles.header}>Products</Text>
+            {loading ? (
+                <ActivityIndicator size="large" color="#007BFF" style={styles.loader} />
+            ) : products.length > 0 ? (
                 <FlatList
                     data={products}
+                    renderItem={renderItem}
                     keyExtractor={(item) => item._id}
                     numColumns={2}
-                    columnWrapperStyle={styles.row}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity style={styles.card}>
-                            <Image
-                                source={{ uri: item.image }}
-                                style={styles.image}
-                            />
-                            <Text style={styles.name}>{item.name}</Text>
-                            <Text style={styles.price}>${item.price}</Text>
-                            <Text style={styles.description} numberOfLines={2}>
-                                {item.description}
-                            </Text>
-                        </TouchableOpacity>
-                    )}
+                    contentContainerStyle={styles.listContainer}
                 />
             ) : (
                 <Text style={styles.noProducts}>No products found.</Text>
@@ -62,61 +69,32 @@ const ProductByCategory: React.FC<ProductByCategoryProps> = ({ id }) => {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: "#f8f9fa",
-        padding: 10,
+        flex: 3,
+        width: '100%',
+        backgroundColor: "#f5f5f5",
+        paddingHorizontal: 10,
+        paddingTop: 20,
     },
     header: {
         fontSize: 24,
         fontWeight: "bold",
-        marginVertical: 10,
         textAlign: "center",
-        color: "#333",
-    },
-    row: {
-        justifyContent: "space-between",
-    },
-    card: {
-        backgroundColor: "#fff",
-        borderRadius: 10,
         marginBottom: 15,
-        width: "48%",
-        padding: 10,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
-        alignItems: "center",
-    },
-    image: {
-        width: "100%",
-        height: 120,
-        borderRadius: 8,
-        resizeMode: "cover",
-    },
-    name: {
-        fontSize: 16,
-        fontWeight: "bold",
-        marginTop: 10,
         color: "#333",
-        textAlign: "center",
     },
-    price: {
-        fontSize: 14,
-        fontWeight: "600",
-        color: "#007BFF",
-        marginVertical: 5,
-    },
-    description: {
-        fontSize: 12,
-        color: "#777",
-        textAlign: "center",
+    listContainer: {
+        paddingBottom: 20,
+        alignItems: "center",
+        justifyContent: "center",
     },
     noProducts: {
         fontSize: 16,
         fontWeight: "bold",
         color: "#999",
         textAlign: "center",
+        marginTop: 20,
+    },
+    loader: {
         marginTop: 20,
     },
 });

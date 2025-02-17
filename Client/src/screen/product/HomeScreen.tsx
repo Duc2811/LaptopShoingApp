@@ -8,13 +8,16 @@ import ProductModel from "@/src/components/product/productModal";
 import CategoryModel from "@/src/components/category/categoryModal";
 import SubCategoryModel from "@/src/components/category/subCategoryModal";
 import Header from "@/src/components/menus/header";
-
-
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 import { getAllProduct as AllProduct } from "@/src/services/client/ApiCategory_Product";
 import { getAllCategory as AllCategory } from "@/src/services/client/ApiCategory_Product";
 
 import CategoryCard from "@/src/components/category/categoryCard";
+import { RootStackParamList } from "@/src/navigations/RootStackParamList";
+
+type NavigationProp = StackNavigationProp<RootStackParamList, "Home">;
 
 
 const HomeScreen: React.FC = () => {
@@ -22,6 +25,8 @@ const HomeScreen: React.FC = () => {
   const [categories, setCategories] = useState<CategoryModel[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategoryModel[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  const navigation = useNavigation<NavigationProp>();
 
   const fetchProducts = async (page: number) => {
     try {
@@ -72,13 +77,16 @@ const HomeScreen: React.FC = () => {
   }, []);
 
   const handleProductDetails = (item: ProductModel) => {
-    console.log("Navigate to product details for:", item);
+    navigation.navigate("ProductDetail", { id: item._id });
   };
 
   const handleCategoryDetails = (item: CategoryModel | SubCategoryModel) => {
-    console.log("Navigate to category or subcategory details for:", item);
+    if ("_id" in item) {
+      navigation.navigate("ListProduct", { id: item._id });
+    } else {
+      console.error("Error: _id does not exist on item", item);
+    }
   };
-
 
 
   return (
@@ -211,7 +219,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
- 
+
 });
 
 export default HomeScreen;

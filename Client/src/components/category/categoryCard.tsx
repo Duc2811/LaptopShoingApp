@@ -64,7 +64,6 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ item, handleCategoryClick }
         </View>
       )}
 
-      {/* Modal to show products */}
       <Modal visible={modalVisible} animationType="slide" transparent={false}>
         <View style={styles.modalContainer}>
           {selectedSubCategoryId && <ProductByCategory id={selectedSubCategoryId} />}

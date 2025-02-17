@@ -13,16 +13,14 @@ const initalState = {
 };
 
 export const doLogin = createAction<User>('user/doLogin')
-export const doLogout = createAction('user/doLogout')
-export const doDarkMode = createAction<boolean>('user/doDarkMode')
+export const doLogout = createAction<User>('user/doLogout')
+
 
 const userReducer = createReducer(initalState, builder => {
     builder.addCase(doLogin, (state, action) => {
         state.user = action.payload;
     }).addCase(doLogout, (state) => {
         state.user = initalState.user;
-    }).addCase(doDarkMode, (state, action) => {
-        state.darkMode = action.payload
     })
 })
 
