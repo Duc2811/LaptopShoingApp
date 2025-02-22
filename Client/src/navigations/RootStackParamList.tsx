@@ -10,4 +10,6 @@ export type RootStackParamList = {
     ListProduct: { id: string };
     ProductDetail: { id: string };
     Cart: undefined;
+    Order: undefined;
+    QrScreen: { url: string };
 };

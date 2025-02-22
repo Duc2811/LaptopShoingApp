@@ -12,6 +12,8 @@ import productManagerScreen from '../screen/productManager/productManagerScreen'
 import ListProductScreen from '../screen/product/ListProductScreen';
 import ProductDetail from '../screen/product/productDetail';
 import cartScreen from '../screen/Cart/cartScreen';
+import Order from '../screen/Cart/orderScreen';
+import QrScreen from '../screen/Cart/qrScreen';
 
 export type RootStackParamList = {
   Register: undefined;
@@ -24,8 +26,11 @@ export type RootStackParamList = {
   ProductManagerScreen: undefined;
   ListProduct: { id: string };
   ProductDetail: { id: string };
-  Cart: undefined
+  Cart: undefined,
+  Order: undefined,
+  QrScreen: { url: string };
 };
+
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -92,6 +97,17 @@ const StackNavigator: React.FC = () => {
         component={cartScreen}
         options={{ headerShown: true }}
       />
+      <Stack.Screen
+        name="Order"
+        component={Order}
+        options={{ title: "Đặt Hàng" }}
+      />
+      <Stack.Screen
+        name="QrScreen"
+        component={QrScreen}
+        options={{ title: "Thanh Toán QR" }}
+      />
+
     </Stack.Navigator>
 
   );

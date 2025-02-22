@@ -8,12 +8,11 @@ interface User {
 
 const initalState = {
     user: { _id: "", token: "" },
-    darkMode: false,
     notification: 0
 };
 
 export const doLogin = createAction<User>('user/doLogin')
-export const doLogout = createAction<User>('user/doLogout')
+export const doLogout = createAction('user/doLogout')
 
 
 const userReducer = createReducer(initalState, builder => {

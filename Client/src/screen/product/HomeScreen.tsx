@@ -95,7 +95,7 @@ const HomeScreen: React.FC = () => {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View>
-        <Header isCart={true} />
+        <Header isCart={false} />
       </View>
       <View>
         <Banner />

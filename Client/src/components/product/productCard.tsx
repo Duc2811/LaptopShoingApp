@@ -1,9 +1,8 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View, Button } from "react-native";
 import React from "react";
 import Product from "./productModal";
-import { useDispatch } from "react-redux";
 import { ScrollView } from "react-native";
-
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../store/reducer/cartReducer";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -18,16 +17,28 @@ const ProductCard: React.FC<ProductCardProps> = ({ item, handleProductClick }) =
   const dispatch = useDispatch();
   const navigation = useNavigation<NavigationProp>();
 
+  const userId = useSelector((state: any) => state.user.user._id);
+
   const handleAddToCart = () => {
+    if (!userId) {
+      alert("Please log in to add items to your cart.");
+      return;
+    }
+
+
     dispatch(addToCart({
-      productId: item._id,
-      name: item.name,
-      price: item.price ? Number(item.price) : 0,
-      image: item.image,
-      quantity: 1
+      userId: userId,
+      item: {
+        productId: item._id,
+        name: item.name,
+        price: item.price ? Number(item.price) : 0,
+        image: item.image,
+        quantity: 1
+      }
     }));
     navigation.navigate("Cart");
   };
+
 
 
 

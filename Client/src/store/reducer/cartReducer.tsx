@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface CartItem {
   productId: string;
@@ -9,52 +9,65 @@ interface CartItem {
 }
 
 interface CartState {
-  items: CartItem[];
+  items: { [userId: string]: CartItem[] }; // Thêm 'items' để rõ ràng hơn
 }
 
 const initialState: CartState = {
-  items: [],
+  items: {}, // Khởi tạo đúng kiểu cho items
 };
 
 const cartSlice = createSlice({
-  name: "cart",
+  name: 'cart',
   initialState,
   reducers: {
-    addToCart: (state, action: PayloadAction<CartItem>) => {
-      const existingItem = state.items.find(item => item.productId === action.payload.productId);
+    addToCart: (state, action: PayloadAction<{ userId: string; item: CartItem }>) => {
+      const { userId, item } = action.payload;
+      
+      // Kiểm tra xem state.items đã được khởi tạo chưa, nếu chưa thì khởi tạo nó
+      if (!state.items) {
+        state.items = {};
+      }
+    
+      if (!state.items[userId]) {
+        state.items[userId] = [];
+      }
+    
+      const existingItem = state.items[userId].find(cartItem => cartItem.productId === item.productId);
       if (existingItem) {
-        existingItem.quantity += action.payload.quantity || 1;
+        existingItem.quantity += item.quantity || 1;
       } else {
-        state.items.push({
-          productId: action.payload.productId,
-          name: action.payload.name,
-          price: action.payload.price,
-          image: action.payload.image,
-          quantity: action.payload.quantity || 1
-        });
+        state.items[userId].push({ ...item, quantity: item.quantity || 1 });
       }
     },
-    removeFromCart: (state, action: PayloadAction<string>) => {
-      state.items = state.items.filter(item => item.productId !== action.payload);
+    
+    removeFromCart: (state, action: PayloadAction<{ userId: string; productId: string }>) => {
+      const { userId, productId } = action.payload;
+      if (state.items[userId]) {
+        state.items[userId] = state.items[userId].filter(item => item.productId !== productId);
+      }
     },
-    clearCart: (state) => {
-      state.items = [];
+    clearCart: (state, action: PayloadAction<{ userId: string }>) => {
+      const { userId } = action.payload;
+      if (state.items[userId]) {
+        state.items[userId] = [];
+      }
     },
-    increaseQuantity: (state, action: PayloadAction<string>) => {
-      const item = state.items.find(item => item.productId === action.payload);
+    increaseQuantity: (state, action: PayloadAction<{ userId: string; productId: string }>) => {
+      const { userId, productId } = action.payload;
+      const item = state.items[userId]?.find(item => item.productId === productId);
       if (item) {
         item.quantity += 1;
       }
     },
-    decreaseQuantity: (state, action: PayloadAction<string>) => {
-      const item = state.items.find(item => item.productId === action.payload);
+    decreaseQuantity: (state, action: PayloadAction<{ userId: string; productId: string }>) => {
+      const { userId, productId } = action.payload;
+      const item = state.items[userId]?.find(item => item.productId === productId);
       if (item && item.quantity > 1) {
         item.quantity -= 1;
       }
     },
   },
 });
-
 
 export const { addToCart, removeFromCart, clearCart, increaseQuantity, decreaseQuantity } = cartSlice.actions;
 export default cartSlice.reducer;

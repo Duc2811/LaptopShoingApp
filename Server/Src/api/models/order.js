@@ -5,12 +5,7 @@ const orderModel = new Schema(
     {
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", 
-            required: true,
-        },
-        cartId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Cart",
+            ref: "User",
             required: true,
         },
         products: [
@@ -34,6 +29,11 @@ const orderModel = new Schema(
             type: Number,
             required: true,
         },
+        orderStatus: {
+            type: String,
+            enum: ["Pending", "Delivering", "Shipped", "Completed", "Cancelled"],
+            default: "Pending",
+        },
         paymentMethod: {
             type: String,
             enum: ["Wallet", "COD", "Bank Transfer"],
@@ -50,6 +50,10 @@ const orderModel = new Schema(
                 return this.paymentMethod === "COD";
             },
         },
+        note: {
+            type: String,
+            default: "",
+        }
     },
     {
         timestamps: true,
